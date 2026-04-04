@@ -495,16 +495,21 @@
   }
 
   function startLofi() {
-    audioCtx   = new (window.AudioContext || window.webkitAudioContext)();
-    masterGain = audioCtx.createGain();
-    masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
-    masterGain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 2.5);
-    masterGain.connect(audioCtx.destination);
-    musicOn = true;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // Обязательно для мобильных / Telegram WebView — контекст стартует suspended
+    audioCtx.resume().then(() => {
+      masterGain = audioCtx.createGain();
+      masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
+      masterGain.gain.linearRampToValueAtTime(0.75, audioCtx.currentTime + 1.5);
+      masterGain.connect(audioCtx.destination);
+      musicOn = true;
 
-    addBrownNoise();
-    addChordPad();
-    addCrackle();
+      addBrownNoise();
+      addChordPad();
+      addCrackle();
+    }).catch(err => {
+      console.warn('AudioContext resume failed:', err);
+    });
   }
 
   function stopLofi() {
@@ -540,7 +545,7 @@
     const lpf = audioCtx.createBiquadFilter();
     lpf.type = 'lowpass'; lpf.frequency.value = 280;
 
-    const gain = audioCtx.createGain(); gain.gain.value = 0.32;
+    const gain = audioCtx.createGain(); gain.gain.value = 0.55;
     src.connect(lpf); lpf.connect(gain); gain.connect(masterGain);
     src.start();
     allNodes.push(src);
@@ -575,7 +580,7 @@
 
       const gainNode = audioCtx.createGain();
       gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.052, audioCtx.currentTime + 3.5);
+      gainNode.gain.linearRampToValueAtTime(0.18, audioCtx.currentTime + 2.5);
       lfoGain.connect(gainNode.gain);
 
       const lpf = audioCtx.createBiquadFilter();
