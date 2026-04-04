@@ -464,166 +464,38 @@
     }
   }
 
-  /* ─── Lo-fi аудио (Web Audio API) ─────────────────────────── */
-  // Аккордовый прогрессия: Am7 → Fmaj7 → Cmaj7 → Em7
-  const CHORDS = [
-    [220.00, 261.63, 329.63, 392.00],  // Am7
-    [174.61, 220.00, 261.63, 329.63],  // Fmaj7
-    [130.81, 164.81, 196.00, 246.94],  // Cmaj7
-    [164.81, 196.00, 246.94, 293.66],  // Em7
-  ];
-  let audioCtx   = null;
-  let masterGain = null;
-  let musicOn    = false;
-  let allNodes   = [];
-  let chordOscs  = [];
-  let chordIdx   = 0;
-  let chordTid   = null;
-  let crackleTid = null;
+  /* ─── Lo-fi аудио (HTML5 Audio) ───────────────────────────── */
+  // Файл lofi.mp3 должен лежать рядом с timer.html на GitHub Pages
+  let musicOn = false;
+  const audio = new Audio('./lofi.mp3');
+  audio.loop   = true;
+  audio.volume = 0.45;
 
   function toggleMusic() {
     const btn = document.getElementById('musicBtn');
     if (musicOn) {
-      stopLofi();
+      audio.pause();
+      musicOn = false;
       btn.textContent = '🎵';
       btn.classList.remove('active');
     } else {
-      startLofi();
-      btn.textContent = '🔇';
-      btn.classList.add('active');
-    }
-  }
-
-  function startLofi() {
-    try {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    } catch (e) {
-      console.warn('Web Audio не поддерживается:', e);
-      return;
-    }
-
-    // Создаём граф ДО resume — иначе на мобильных ноды не запускаются
-    masterGain = audioCtx.createGain();
-    masterGain.gain.value = 0.8;
-    masterGain.connect(audioCtx.destination);
-    musicOn = true;
-
-    addBrownNoise();
-    addChordPad();
-    addCrackle();
-
-    // resume() после создания нод — это ключевой порядок для Telegram WebView
-    if (audioCtx.state === 'suspended') {
-      audioCtx.resume().catch(e => console.warn('resume error:', e));
+      audio.play().then(() => {
+        musicOn = true;
+        btn.textContent = '🔇';
+        btn.classList.add('active');
+      }).catch(() => {
+        btn.textContent = '🎵';
+        btn.classList.remove('active');
+      });
     }
   }
 
   function stopLofi() {
-    musicOn = false;
-    if (crackleTid) { clearTimeout(crackleTid); crackleTid = null; }
-    if (chordTid)   { clearTimeout(chordTid);   chordTid   = null; }
-    if (masterGain) {
-      masterGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1.5);
+    if (musicOn) {
+      audio.pause();
+      audio.currentTime = 0;
+      musicOn = false;
     }
-    setTimeout(() => {
-      allNodes.forEach(n => { try { n.stop(); } catch(e) {} });
-      allNodes = []; chordOscs = [];
-      if (audioCtx) { audioCtx.close(); audioCtx = null; }
-      masterGain = null;
-    }, 1700);
-  }
-
-  /* Коричневый шум (тёплый фон) */
-  function addBrownNoise() {
-    const bufLen = 4 * audioCtx.sampleRate;
-    const buf    = audioCtx.createBuffer(1, bufLen, audioCtx.sampleRate);
-    const data   = buf.getChannelData(0);
-    let last = 0;
-    for (let i = 0; i < bufLen; i++) {
-      const w  = Math.random() * 2 - 1;
-      data[i]  = (last + 0.02 * w) / 1.02;
-      last     = data[i];
-      data[i] *= 3.5;
-    }
-    const src = audioCtx.createBufferSource();
-    src.buffer = buf; src.loop = true;
-
-    const lpf = audioCtx.createBiquadFilter();
-    lpf.type = 'lowpass'; lpf.frequency.value = 280;
-
-    const gain = audioCtx.createGain(); gain.gain.value = 0.55;
-    src.connect(lpf); lpf.connect(gain); gain.connect(masterGain);
-    src.start();
-    allNodes.push(src);
-  }
-
-  /* Аккордовый пэд (4 синуса с детюном и тремоло) */
-  function addChordPad() { playChord(); }
-
-  function playChord() {
-    if (!musicOn || !audioCtx) return;
-
-    // Плавно убираем старые осцилляторы
-    chordOscs.forEach(({ osc, gain }) => {
-      gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 3);
-      setTimeout(() => { try { osc.stop(); } catch(e) {} }, 3200);
-    });
-    chordOscs = [];
-
-    const freqs = CHORDS[chordIdx % CHORDS.length];
-    chordIdx++;
-
-    freqs.forEach((freq, i) => {
-      const osc = audioCtx.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.value = freq * (1 + (Math.random() - 0.5) * 0.003);
-
-      // Медленное тремоло
-      const lfo     = audioCtx.createOscillator();
-      lfo.frequency.value = 0.15 + Math.random() * 0.25;
-      const lfoGain = audioCtx.createGain(); lfoGain.gain.value = 0.007;
-      lfo.connect(lfoGain);
-
-      const gainNode = audioCtx.createGain();
-      gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.18, audioCtx.currentTime + 2.5);
-      lfoGain.connect(gainNode.gain);
-
-      const lpf = audioCtx.createBiquadFilter();
-      lpf.type = 'lowpass'; lpf.frequency.value = 550 + i * 90;
-
-      osc.connect(lpf); lpf.connect(gainNode); gainNode.connect(masterGain);
-      osc.start(); lfo.start();
-      allNodes.push(osc, lfo);
-      chordOscs.push({ osc, gain: gainNode });
-    });
-
-    // Следующая смена аккорда через 13-17 секунд
-    chordTid = setTimeout(playChord, 13000 + Math.random() * 4000);
-  }
-
-  /* Виниловый треск */
-  function addCrackle() {
-    if (!musicOn || !audioCtx) return;
-
-    const dur   = 0.007 + Math.random() * 0.022;
-    const bufSz = Math.max(4, Math.floor(dur * audioCtx.sampleRate));
-    const buf   = audioCtx.createBuffer(1, bufSz, audioCtx.sampleRate);
-    const data  = buf.getChannelData(0);
-    for (let i = 0; i < bufSz; i++)
-      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSz * 0.35));
-
-    const src  = audioCtx.createBufferSource();
-    src.buffer = buf;
-    const hpf  = audioCtx.createBiquadFilter();
-    hpf.type   = 'highpass'; hpf.frequency.value = 4200;
-    const gain = audioCtx.createGain();
-    gain.gain.value = 0.012 + Math.random() * 0.022;
-
-    src.connect(hpf); hpf.connect(gain); gain.connect(masterGain);
-    src.start();
-
-    crackleTid = setTimeout(addCrackle, 120 + Math.random() * 650);
   }
 
   /* ─── Старт ─────────────────────────────────────────────────── */
