@@ -495,21 +495,27 @@
   }
 
   function startLofi() {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    // Обязательно для мобильных / Telegram WebView — контекст стартует suspended
-    audioCtx.resume().then(() => {
-      masterGain = audioCtx.createGain();
-      masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
-      masterGain.gain.linearRampToValueAtTime(0.75, audioCtx.currentTime + 1.5);
-      masterGain.connect(audioCtx.destination);
-      musicOn = true;
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch (e) {
+      console.warn('Web Audio не поддерживается:', e);
+      return;
+    }
 
-      addBrownNoise();
-      addChordPad();
-      addCrackle();
-    }).catch(err => {
-      console.warn('AudioContext resume failed:', err);
-    });
+    // Создаём граф ДО resume — иначе на мобильных ноды не запускаются
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 0.8;
+    masterGain.connect(audioCtx.destination);
+    musicOn = true;
+
+    addBrownNoise();
+    addChordPad();
+    addCrackle();
+
+    // resume() после создания нод — это ключевой порядок для Telegram WebView
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(e => console.warn('resume error:', e));
+    }
   }
 
   function stopLofi() {
