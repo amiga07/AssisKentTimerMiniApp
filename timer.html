@@ -236,6 +236,29 @@
       to   { width:300px; height:300px; opacity:0; }
     }
 
+    /* ── Кнопка музыки ─────────────────────────────────────────── */
+    #musicBtn {
+      position: fixed;
+      top: 14px; right: 14px;
+      background: var(--bar);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text-dim);
+      font-size: 18px;
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 15;
+      transition: all 0.25s;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0;
+    }
+    #musicBtn:active { transform: scale(0.88); }
+    #musicBtn.active {
+      color: var(--text);
+      border-color: var(--ring);
+      box-shadow: 0 0 12px var(--glow);
+    }
+
     @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
     @keyframes pop {
       0%   { transform: scale(0) rotate(-10deg); opacity:0; }
@@ -245,6 +268,9 @@
   </style>
 </head>
 <body>
+
+  <!-- Кнопка музыки -->
+  <button id="musicBtn" onclick="toggleMusic()" title="Lo-fi музыка">🎵</button>
 
   <!-- Звёзды -->
   <div id="stars"></div>
@@ -411,6 +437,14 @@
 
   /* ─── Завершение ────────────────────────────────────────────── */
   function showDone() {
+    // Плавно выключаем музыку
+    if (musicOn) {
+      stopLofi();
+      const btn = document.getElementById('musicBtn');
+      btn.textContent = '🎵';
+      btn.classList.remove('active');
+    }
+
     const screen = document.getElementById('doneScreen');
     screen.classList.add('show');
 
@@ -428,6 +462,157 @@
         tg.sendData(JSON.stringify({ type: TYPE, done: true }));
       }, 2000);
     }
+  }
+
+  /* ─── Lo-fi аудио (Web Audio API) ─────────────────────────── */
+  // Аккордовый прогрессия: Am7 → Fmaj7 → Cmaj7 → Em7
+  const CHORDS = [
+    [220.00, 261.63, 329.63, 392.00],  // Am7
+    [174.61, 220.00, 261.63, 329.63],  // Fmaj7
+    [130.81, 164.81, 196.00, 246.94],  // Cmaj7
+    [164.81, 196.00, 246.94, 293.66],  // Em7
+  ];
+  let audioCtx   = null;
+  let masterGain = null;
+  let musicOn    = false;
+  let allNodes   = [];
+  let chordOscs  = [];
+  let chordIdx   = 0;
+  let chordTid   = null;
+  let crackleTid = null;
+
+  function toggleMusic() {
+    const btn = document.getElementById('musicBtn');
+    if (musicOn) {
+      stopLofi();
+      btn.textContent = '🎵';
+      btn.classList.remove('active');
+    } else {
+      startLofi();
+      btn.textContent = '🔇';
+      btn.classList.add('active');
+    }
+  }
+
+  function startLofi() {
+    audioCtx   = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
+    masterGain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 2.5);
+    masterGain.connect(audioCtx.destination);
+    musicOn = true;
+
+    addBrownNoise();
+    addChordPad();
+    addCrackle();
+  }
+
+  function stopLofi() {
+    musicOn = false;
+    if (crackleTid) { clearTimeout(crackleTid); crackleTid = null; }
+    if (chordTid)   { clearTimeout(chordTid);   chordTid   = null; }
+    if (masterGain) {
+      masterGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1.5);
+    }
+    setTimeout(() => {
+      allNodes.forEach(n => { try { n.stop(); } catch(e) {} });
+      allNodes = []; chordOscs = [];
+      if (audioCtx) { audioCtx.close(); audioCtx = null; }
+      masterGain = null;
+    }, 1700);
+  }
+
+  /* Коричневый шум (тёплый фон) */
+  function addBrownNoise() {
+    const bufLen = 4 * audioCtx.sampleRate;
+    const buf    = audioCtx.createBuffer(1, bufLen, audioCtx.sampleRate);
+    const data   = buf.getChannelData(0);
+    let last = 0;
+    for (let i = 0; i < bufLen; i++) {
+      const w  = Math.random() * 2 - 1;
+      data[i]  = (last + 0.02 * w) / 1.02;
+      last     = data[i];
+      data[i] *= 3.5;
+    }
+    const src = audioCtx.createBufferSource();
+    src.buffer = buf; src.loop = true;
+
+    const lpf = audioCtx.createBiquadFilter();
+    lpf.type = 'lowpass'; lpf.frequency.value = 280;
+
+    const gain = audioCtx.createGain(); gain.gain.value = 0.32;
+    src.connect(lpf); lpf.connect(gain); gain.connect(masterGain);
+    src.start();
+    allNodes.push(src);
+  }
+
+  /* Аккордовый пэд (4 синуса с детюном и тремоло) */
+  function addChordPad() { playChord(); }
+
+  function playChord() {
+    if (!musicOn || !audioCtx) return;
+
+    // Плавно убираем старые осцилляторы
+    chordOscs.forEach(({ osc, gain }) => {
+      gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 3);
+      setTimeout(() => { try { osc.stop(); } catch(e) {} }, 3200);
+    });
+    chordOscs = [];
+
+    const freqs = CHORDS[chordIdx % CHORDS.length];
+    chordIdx++;
+
+    freqs.forEach((freq, i) => {
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = freq * (1 + (Math.random() - 0.5) * 0.003);
+
+      // Медленное тремоло
+      const lfo     = audioCtx.createOscillator();
+      lfo.frequency.value = 0.15 + Math.random() * 0.25;
+      const lfoGain = audioCtx.createGain(); lfoGain.gain.value = 0.007;
+      lfo.connect(lfoGain);
+
+      const gainNode = audioCtx.createGain();
+      gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.052, audioCtx.currentTime + 3.5);
+      lfoGain.connect(gainNode.gain);
+
+      const lpf = audioCtx.createBiquadFilter();
+      lpf.type = 'lowpass'; lpf.frequency.value = 550 + i * 90;
+
+      osc.connect(lpf); lpf.connect(gainNode); gainNode.connect(masterGain);
+      osc.start(); lfo.start();
+      allNodes.push(osc, lfo);
+      chordOscs.push({ osc, gain: gainNode });
+    });
+
+    // Следующая смена аккорда через 13-17 секунд
+    chordTid = setTimeout(playChord, 13000 + Math.random() * 4000);
+  }
+
+  /* Виниловый треск */
+  function addCrackle() {
+    if (!musicOn || !audioCtx) return;
+
+    const dur   = 0.007 + Math.random() * 0.022;
+    const bufSz = Math.max(4, Math.floor(dur * audioCtx.sampleRate));
+    const buf   = audioCtx.createBuffer(1, bufSz, audioCtx.sampleRate);
+    const data  = buf.getChannelData(0);
+    for (let i = 0; i < bufSz; i++)
+      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSz * 0.35));
+
+    const src  = audioCtx.createBufferSource();
+    src.buffer = buf;
+    const hpf  = audioCtx.createBiquadFilter();
+    hpf.type   = 'highpass'; hpf.frequency.value = 4200;
+    const gain = audioCtx.createGain();
+    gain.gain.value = 0.012 + Math.random() * 0.022;
+
+    src.connect(hpf); hpf.connect(gain); gain.connect(masterGain);
+    src.start();
+
+    crackleTid = setTimeout(addCrackle, 120 + Math.random() * 650);
   }
 
   /* ─── Старт ─────────────────────────────────────────────────── */
