@@ -417,7 +417,7 @@
 
     table {
       width: 100%;
-      min-width: 880px;
+      min-width: 760px;
       border-collapse: collapse;
     }
 
@@ -701,8 +701,7 @@
                   <th>День</th>
                   <th>Время пары</th>
                   <th>Название предмета</th>
-                  <th>Аудитория</th>
-                  <th>Преподаватель</th>
+                  <th>Неделя</th>
                   <th>Приоритетный</th>
                   <th>Действие</th>
                 </tr>
@@ -917,8 +916,7 @@
             day: row.day,
             time: row.time,
             subject: row.subject,
-            room: row.room,
-            teacher: row.teacher,
+            weekType: row.weekType || "every",
             isPriority: !!row.isPriority
           }))
         });
@@ -1063,8 +1061,13 @@
           </td>
           <td><input data-field="time" value="${escapeAttr(row.time)}" placeholder="09:00-10:30"></td>
           <td><input data-field="subject" value="${escapeAttr(row.subject)}" placeholder="Название пары"></td>
-          <td><input data-field="room" value="${escapeAttr(row.room)}" placeholder="302 / онлайн"></td>
-          <td><input data-field="teacher" value="${escapeAttr(row.teacher)}" placeholder="Преподаватель"></td>
+          <td>
+            <select data-field="weekType">
+              <option value="every" ${normalizeWeekType(row.weekType) === "every" ? "selected" : ""}>Каждую неделю</option>
+              <option value="even" ${normalizeWeekType(row.weekType) === "even" ? "selected" : ""}>Только чётная</option>
+              <option value="odd" ${normalizeWeekType(row.weekType) === "odd" ? "selected" : ""}>Только нечётная</option>
+            </select>
+          </td>
           <td>
             <label class="prio">
               <input data-field="isPriority" type="checkbox" ${row.isPriority ? "checked" : ""}>
@@ -1223,8 +1226,7 @@
           day: field("day").value,
           time: field("time").value.trim(),
           subject: field("subject").value.trim(),
-          room: field("room").value.trim(),
-          teacher: field("teacher").value.trim(),
+          weekType: normalizeWeekType(field("weekType").value),
           isPriority: field("isPriority").checked
         };
       });
@@ -1291,10 +1293,14 @@
         day: days[0],
         time: "",
         subject: "",
-        room: "",
-        teacher: "",
+        weekType: "every",
         isPriority: false
       };
+    }
+
+    function normalizeWeekType(value) {
+      if (value === "even" || value === "odd") return value;
+      return "every";
     }
 
     async function handlePhoto(file) {
