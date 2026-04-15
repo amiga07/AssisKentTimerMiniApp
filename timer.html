@@ -1,557 +1,69 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>Lo-fi Timer</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-    /* ── Цветовые темы ─────────────────────────────────────────── */
-    :root {
-      --bg:        #1a1028;
-      --bg2:       #251535;
-      --ring:      #e8a05e;
-      --ring-dim:  rgba(232,160,94,0.15);
-      --glow:      rgba(232,160,94,0.45);
-      --text:      #f2dbb0;
-      --text-dim:  rgba(242,219,176,0.4);
-      --bar:       rgba(255,255,255,0.06);
-      --done-icon: "✅";
-    }
-    .rest {
-      --bg:        #0c1b27;
-      --bg2:       #102030;
-      --ring:      #7ec8e3;
-      --ring-dim:  rgba(126,200,227,0.12);
-      --glow:      rgba(126,200,227,0.45);
-      --text:      #b8e4d4;
-      --text-dim:  rgba(184,228,212,0.4);
-    }
-
-    /* ── Основа ─────────────────────────────────────────────────── */
-    html, body {
-      width: 100%; height: 100%;
-      background: radial-gradient(ellipse at 50% 40%, var(--bg2) 0%, var(--bg) 70%);
-      color: var(--text);
-      font-family: 'VT323', monospace;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      transition: background 0.8s;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    /* ── Скан-линии (ретро CRT) ─────────────────────────────────── */
-    body::after {
-      content: '';
-      position: fixed; inset: 0;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0,0,0,0.04) 2px,
-        rgba(0,0,0,0.04) 4px
-      );
-      pointer-events: none;
-      z-index: 10;
-    }
-
-    /* ── Звёзды ─────────────────────────────────────────────────── */
-    #stars {
-      position: fixed; inset: 0;
-      pointer-events: none;
-      overflow: hidden;
-    }
-    .star {
-      position: absolute;
-      border-radius: 50%;
-      background: var(--text);
-      animation: twinkle var(--d, 3s) ease-in-out var(--dl, 0s) infinite;
-      opacity: 0;
-    }
-    @keyframes twinkle {
-      0%,100% { opacity: 0; transform: scale(0.8); }
-      50%      { opacity: var(--op, 0.6); transform: scale(1.2); }
-    }
-
-    /* ── Плавающие частицы ──────────────────────────────────────── */
-    .particle {
-      position: fixed;
-      font-size: 18px;
-      opacity: 0;
-      animation: float-up var(--dur, 6s) ease-in var(--dl2, 0s) infinite;
-      pointer-events: none;
-    }
-    @keyframes float-up {
-      0%   { opacity: 0;   transform: translateY(0) rotate(0deg); }
-      15%  { opacity: 0.5; }
-      85%  { opacity: 0.3; }
-      100% { opacity: 0;   transform: translateY(-120px) rotate(20deg); }
-    }
-
-    /* ── Иконка режима ──────────────────────────────────────────── */
-    #modeIcon {
-      font-size: 38px;
-      margin-bottom: 10px;
-      animation: bob 3.5s ease-in-out infinite;
-      filter: drop-shadow(0 0 12px var(--glow));
-    }
-    @keyframes bob {
-      0%,100% { transform: translateY(0); }
-      50%      { transform: translateY(-7px); }
-    }
-
-    /* ── Подпись ────────────────────────────────────────────────── */
-    #modeLabel {
-      font-size: 15px;
-      letter-spacing: 5px;
-      color: var(--text-dim);
-      margin-bottom: 28px;
-      text-transform: uppercase;
-    }
-
-    /* ── SVG кольцо ─────────────────────────────────────────────── */
-    .ring-wrap {
-      position: relative;
-      width: 230px; height: 230px;
-      margin-bottom: 24px;
-    }
-    svg.ring {
-      width: 230px; height: 230px;
-      transform: rotate(-90deg);
-      overflow: visible;
-    }
-    .ring-bg {
-      fill: none;
-      stroke: var(--ring-dim);
-      stroke-width: 10;
-    }
-    .ring-progress {
-      fill: none;
-      stroke: var(--ring);
-      stroke-width: 10;
-      stroke-linecap: round;
-      filter: drop-shadow(0 0 10px var(--glow));
-      transition: stroke-dashoffset 0.9s linear;
-    }
-    /* пульсирующее кольцо-глоу вокруг прогресса */
-    .ring-glow {
-      fill: none;
-      stroke: var(--ring);
-      stroke-width: 18;
-      stroke-linecap: round;
-      opacity: 0.08;
-      animation: pulse-glow 2.5s ease-in-out infinite;
-    }
-    @keyframes pulse-glow {
-      0%,100% { opacity: 0.06; stroke-width: 16; }
-      50%      { opacity: 0.14; stroke-width: 22; }
-    }
-
-    /* ── Цифры в центре ─────────────────────────────────────────── */
-    .center {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-    #timeDigits {
-      font-size: 58px;
-      line-height: 1;
-      color: var(--text);
-      text-shadow: 0 0 24px var(--glow);
-      letter-spacing: 2px;
-    }
-    #timeSubLabel {
-      font-size: 11px;
-      letter-spacing: 3px;
-      color: var(--text-dim);
-      margin-top: 6px;
-      text-transform: uppercase;
-    }
-
-    /* ── Тонкая полоска прогресса ───────────────────────────────── */
-    .bar-wrap {
-      width: 210px; height: 4px;
-      background: var(--bar);
-      border-radius: 2px;
-      overflow: hidden;
-      margin-bottom: 18px;
-    }
-    #progressBar {
-      height: 100%;
-      background: var(--ring);
-      box-shadow: 0 0 8px var(--glow);
-      border-radius: 2px;
-      transition: width 0.9s linear;
-      width: 100%;
-    }
-
-    /* ── Мотивационный текст ────────────────────────────────────── */
-    #motiveLine {
-      font-size: 14px;
-      color: var(--text-dim);
-      letter-spacing: 1px;
-      min-height: 20px;
-      transition: opacity 0.4s;
-    }
-
-    /* ── Экран завершения ───────────────────────────────────────── */
-    #doneScreen {
-      display: none;
-      position: fixed; inset: 0;
-      background: radial-gradient(ellipse at 50% 40%, var(--bg2), var(--bg) 80%);
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      animation: fadeIn 0.6s ease;
-      z-index: 20;
-    }
-    #doneScreen.show { display: flex; }
-    #doneEmoji  { font-size: 72px; animation: pop 0.5s cubic-bezier(0.17,0.89,0.32,1.28) both; }
-    #doneTitle  { font-size: 28px; letter-spacing: 3px; text-shadow: 0 0 20px var(--glow); }
-    #doneSubtitle { font-size: 16px; color: var(--text-dim); letter-spacing: 2px; }
-
-    /* кольца разлёта */
-    .burst-ring {
-      position: fixed;
-      width: 10px; height: 10px;
-      border: 2px solid var(--ring);
-      border-radius: 50%;
-      top: 50%; left: 50%;
-      transform: translate(-50%,-50%);
-      animation: burst var(--bd,1.2s) ease-out var(--bdl,0s) both;
-    }
-    @keyframes burst {
-      from { width:10px; height:10px; opacity:0.8; }
-      to   { width:300px; height:300px; opacity:0; }
-    }
-
-    /* ── Кнопка музыки ─────────────────────────────────────────── */
-    #musicBtn {
-      position: fixed;
-      top: 14px; right: 14px;
-      background: var(--bar);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: var(--text-dim);
-      font-size: 18px;
-      width: 38px; height: 38px;
-      border-radius: 50%;
-      cursor: pointer;
-      z-index: 15;
-      transition: all 0.25s;
-      display: flex; align-items: center; justify-content: center;
-      padding: 0;
-    }
-    #musicBtn:active { transform: scale(0.88); }
-    #musicBtn.active {
-      color: var(--text);
-      border-color: var(--ring);
-      box-shadow: 0 0 12px var(--glow);
-    }
-
-    #stopTimerBtn {
-      position: fixed;
-      left: 50%; bottom: 22px;
-      transform: translateX(-50%);
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
-      color: var(--text);
-      font-family: 'Space Mono', monospace;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0;
-      padding: 12px 18px;
-      border-radius: 8px;
-      cursor: pointer;
-      z-index: 15;
-      transition: transform 0.2s, opacity 0.2s, border-color 0.2s, box-shadow 0.2s;
-    }
-    #stopTimerBtn:active { transform: translateX(-50%) scale(0.96); }
-    #stopTimerBtn:disabled {
-      cursor: default;
-      opacity: 0.55;
-      border-color: var(--ring);
-      box-shadow: 0 0 10px var(--glow);
-    }
-
-    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-    @keyframes pop {
-      0%   { transform: scale(0) rotate(-10deg); opacity:0; }
-      70%  { transform: scale(1.2) rotate(5deg); }
-      100% { transform: scale(1) rotate(0); opacity:1; }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Student Mini App</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:14px 14px 30px;background:#f7f7f4;color:#17211e;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:0}button,input,select{font:inherit;letter-spacing:0}button{min-height:42px;border:0;border-radius:8px;padding:10px 13px;background:#168a64;color:#fff;font-weight:800;cursor:pointer}button:active{transform:scale(.98)}button:disabled{opacity:.5}.secondary{background:#e9eeeb;color:#17211e;border:1px solid #d9e1dc}.danger{background:#c73232}.blue{background:#3267d6}.yellow{background:#f1b43a;color:#241b04}input,select{width:100%;min-height:42px;border:1px solid #d9e1dc;border-radius:8px;padding:9px 11px;background:#fff;color:#17211e}label{display:block;margin:0 0 6px;color:#68736f;font-size:13px;font-weight:800}.app{max-width:1120px;margin:auto}.top{display:flex;justify-content:space-between;gap:12px;margin-bottom:12px}.top h1{margin:0;font-size:26px;line-height:1.1}.muted{color:#68736f;line-height:1.35}.pill,.band,.metric,.task{border:1px solid #d9e1dc;border-radius:8px;background:#fff;box-shadow:0 10px 24px #18211f14}.pill{padding:10px 12px;font-weight:800;max-width:240px}.tabs{position:sticky;top:0;z-index:5;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:8px 0 14px;background:#f7f7f4}.tab{background:#fff;color:#17211e;border:1px solid #d9e1dc}.tab.active{background:#17211e;color:#fff}.screen{display:none}.screen.active{display:block}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c12{grid-column:span 12}.band{margin-bottom:14px;overflow:hidden}.head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px;border-bottom:1px solid #d9e1dc;background:#eef6f1}.head h2{margin:0;font-size:18px}.body{padding:13px}.metric{min-height:100px;padding:14px}.metric b{display:block;color:#68736f;font-size:13px}.metric strong{display:block;margin-top:8px;font-size:24px;overflow-wrap:anywhere}.timer{display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:center}.ring{width:210px;height:210px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#168a64 var(--p,0%),#e4ebe7 0);position:relative}.ring:after{content:"";position:absolute;inset:16px;border-radius:50%;background:#fff;border:1px solid #d9e1dc}.center{position:relative;z-index:1;text-align:center}.time{display:block;font-size:34px;font-weight:950}.row{display:flex;flex-wrap:wrap;gap:8px}.inline{display:grid;grid-template-columns:minmax(120px,1fr) auto;gap:8px;margin-top:10px}.tasks{display:grid;gap:10px}.task{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px}.task.done{opacity:.65;background:#f3f5f3}.task h3{margin:0;font-size:16px;overflow-wrap:anywhere}.actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.actions button{min-height:36px;padding:8px 10px;font-size:13px}.empty{border:1px dashed #d9e1dc;border-radius:8px;padding:15px;background:#fff;color:#68736f}.photo-tools{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end}.photo{margin-top:12px;border:1px solid #d9e1dc;border-radius:8px;background:#fff;overflow:hidden}.photo img{display:block;width:100%;max-height:520px;object-fit:contain;background:#eef1ee}.placeholder{padding:18px;color:#68736f}.table-wrap{overflow-x:auto;border:1px solid #d9e1dc;border-radius:8px;background:#fff}table{width:100%;min-width:860px;border-collapse:collapse}th,td{padding:8px;border-bottom:1px solid #d9e1dc;text-align:left}th{background:#f3f6f4;color:#68736f;font-size:13px}td input,td select{min-height:38px;padding:7px 9px}.prio{display:flex;gap:8px;align-items:center;font-weight:800;font-size:13px}.prio input{width:18px;height:18px;min-height:18px;accent-color:#e4574f}.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.notice{position:fixed;left:14px;right:14px;bottom:14px;z-index:9;display:none;max-width:760px;margin:auto;border-radius:8px;padding:12px 14px;background:#17211e;color:#fff;font-weight:800}.notice.show{display:block}.notice.error{background:#c73232}@media(max-width:760px){body{padding:12px 12px 28px}.top{display:block}.pill{max-width:none;margin-top:10px}.tabs{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.c3,.c4,.c5,.c6,.c12{grid-column:span 1}.timer{grid-template-columns:1fr;justify-items:center}.inline,.photo-tools{grid-template-columns:1fr}.task{grid-template-columns:1fr}.actions{justify-content:flex-start}}
+</style>
 </head>
 <body>
-
-  <!-- Кнопка музыки -->
-  <button id="musicBtn" onclick="toggleMusic()" title="Lo-fi музыка">🎵</button>
-
-  <!-- Остановка таймера -->
-  <button id="stopTimerBtn" onclick="stopTimerFromMiniApp()">⏹ Остановить</button>
-
-  <!-- Звёзды -->
-  <div id="stars"></div>
-
-  <!-- Плавающие частицы (эмодзи) -->
-
-  <!-- Иконка режима -->
-  <div id="modeIcon">📚</div>
-
-  <!-- Подпись -->
-  <div id="modeLabel">FOCUS TIME</div>
-
-  <!-- Кольцо -->
-  <div class="ring-wrap">
-    <svg class="ring" viewBox="0 0 230 230">
-      <!-- Треки -->
-      <circle class="ring-bg"       cx="115" cy="115" r="100"/>
-      <!-- Глоу-слой (позади прогресса) -->
-      <circle class="ring-glow"     cx="115" cy="115" r="100"
-        stroke-dasharray="628.3"  stroke-dashoffset="0" id="ringGlow"/>
-      <!-- Прогресс -->
-      <circle class="ring-progress" cx="115" cy="115" r="100"
-        stroke-dasharray="628.3"  stroke-dashoffset="0" id="ringProg"/>
-    </svg>
-    <!-- Цифры в центре -->
-    <div class="center">
-      <div id="timeDigits">00:00</div>
-      <div id="timeSubLabel">осталось</div>
-    </div>
-  </div>
-
-  <!-- Полоска -->
-  <div class="bar-wrap">
-    <div id="progressBar"></div>
-  </div>
-
-  <!-- Мотивация -->
-  <div id="motiveLine"></div>
-
-  <!-- Экран завершения -->
-  <div id="doneScreen">
-    <div id="doneEmoji">✅</div>
-    <div id="doneTitle">ГОТОВО!</div>
-    <div id="doneSubtitle"></div>
-  </div>
-
+<main class="app">
+<header class="top"><div><h1>Учёба под рукой</h1><div class="muted">Таймеры, домашка и расписание в одном Mini App.</div></div><div class="pill" id="conn">Подключаюсь...</div></header>
+<nav class="tabs"><button class="tab active" data-tab="overview">Обзор</button><button class="tab" data-tab="timers">Таймеры</button><button class="tab" data-tab="tasks">ДЗ</button><button class="tab" data-tab="schedule">Расписание</button></nav>
+<section class="screen active" id="overview"><div class="grid"><div class="metric c3"><b>Таймер</b><strong id="ovTimer">Нет</strong><span class="muted" id="ovTimerMeta">Можно запускать фокус или отдых.</span></div><div class="metric c3"><b>Усталость</b><strong id="ovFatigue">0%</strong><span class="muted" id="ovFatigueMeta">Появится после сессий.</span></div><div class="metric c3"><b>Домашка</b><strong id="ovTasks">0</strong><span class="muted">активных задач</span></div><div class="metric c3"><b>Расписание</b><strong id="ovSchedule">0</strong><span class="muted">строк в таблице</span></div></div></section>
+<section class="screen" id="timers">
+<div class="band"><div class="head"><h2>Текущий таймер</h2><button class="secondary" id="refresh">Обновить</button></div><div class="body timer"><div class="ring" id="ring"><div class="center"><span class="time" id="time">00:00</span><b id="timerLabel">не запущен</b></div></div><div><p class="muted" id="timerText">Выбери длительность, и бот запустит таймер с уведомлением в Telegram.</p><button class="danger" id="stop">Остановить таймер</button></div></div></div>
+<div class="grid"><div class="band c6"><div class="head"><h2>Фокус</h2></div><div class="body"><div class="row"><button data-start="work:25">25 мин</button><button data-start="work:30">30 мин</button><button data-start="work:45">45 мин</button><button data-start="work:60">60 мин</button></div><div class="inline"><input id="workMin" type="number" min="1" max="300" placeholder="Своё время в минутах"><button id="workCustom">Запустить</button></div></div></div><div class="band c6"><div class="head"><h2>Отдых</h2></div><div class="body"><div class="row"><button class="blue" data-start="rest:5">5 мин</button><button class="blue" data-start="rest:15">15 мин</button><button class="blue" data-start="rest:30">30 мин</button></div><div class="inline"><input id="restMin" type="number" min="1" max="300" placeholder="Своё время отдыха"><button class="blue" id="restCustom">Запустить</button></div></div></div></div>
+</section>
+<section class="screen" id="tasks">
+<div class="band"><div class="head"><h2>Добавить ДЗ</h2></div><div class="body"><div class="grid"><div class="c5"><label>Что нужно сделать</label><input id="taskTitle" placeholder="Решить задачи 12-18"></div><div class="c4"><label>Предмет</label><input id="taskSubject" placeholder="Математика"></div><div class="c3"><label>Дедлайн</label><input id="taskDeadline" type="date"></div><div class="c12"><button id="addTask">Добавить домашку</button></div></div></div></div>
+<div class="band"><div class="head"><h2>Список ДЗ</h2></div><div class="body"><div class="tasks" id="taskList"></div></div></div>
+</section>
+<section class="screen" id="schedule">
+<div class="band"><div class="head"><h2>Фото расписания</h2></div><div class="body"><div class="photo-tools"><div><label>Вставь фото расписания</label><input id="photoInput" type="file" accept="image/*"></div><button class="secondary" id="removePhoto">Убрать фото</button></div><div class="photo" id="photoBox"><div class="placeholder">Фото появится здесь. Ниже можно сразу переписать пары в таблицу.</div></div></div></div>
+<div class="band"><div class="head"><h2>Таблица расписания</h2><button id="addRow">Добавить строку</button></div><div class="body"><div class="table-wrap"><table><thead><tr><th>День</th><th>Время пары</th><th>Название предмета</th><th>Аудитория</th><th>Преподаватель</th><th>Приоритетный</th><th>Действие</th></tr></thead><tbody id="scheduleBody"></tbody></table></div><div class="toolbar"><button id="saveSchedule">Сохранить расписание</button><button class="danger" id="clearSchedule">Очистить</button></div></div></div>
+</section>
+</main><div class="notice" id="notice"></div>
 <script>
-  /* ─── Telegram WebApp ──────────────────────────────────────── */
-  const tg = window.Telegram?.WebApp;
-  if (tg) { tg.expand(); tg.disableClosingConfirmation(); }
-
-  /* ─── Параметры из URL ─────────────────────────────────────── */
-  const params   = new URLSearchParams(location.search);
-  const TYPE     = params.get('type')     || 'work';        // work | rest
-  const DURATION = parseInt(params.get('duration') || '1500'); // секунды
-  const STARTED  = parseInt(params.get('started')  || Date.now()); // ms
-
-  const isRest = TYPE === 'rest';
-  const CIRC   = 628.3;  // 2π × 100
-
-  /* ─── Применяем тему ───────────────────────────────────────── */
-  if (isRest) {
-    document.body.classList.add('rest');
-    document.getElementById('modeIcon').textContent     = '☕';
-    document.getElementById('modeLabel').textContent    = 'REST  TIME';
-    document.getElementById('doneEmoji').textContent    = '🌟';
-    document.getElementById('doneTitle').textContent    = 'ОТДЫХ ЗАВЕРШЁН!';
-    document.getElementById('doneSubtitle').textContent = 'ВРЕМЯ УЧИТЬСЯ 💪';
-    if (tg) tg.setHeaderColor('#0c1b27');
-  } else {
-    document.getElementById('doneSubtitle').textContent = 'ОТЛИЧНАЯ РАБОТА 🎉';
-    if (tg) tg.setHeaderColor('#1a1028');
-  }
-
-  /* ─── Мотивационные фразы ──────────────────────────────────── */
-  const workPhrases = [
-    'сосредоточься 🎯', 'ты справишься! ✨', 'без отвлечений 🔕',
-    'в потоке 🌊', 'deep work 🧠', 'one step at a time 🚶'
-  ];
-  const restPhrases = [
-    'отдыхай 🛋', 'отойди от экрана 👁', 'выпей воды 💧',
-    'потянись 🧘', 'подыши 🌿', 'ты молодец! ⭐'
-  ];
-  const phrases = isRest ? restPhrases : workPhrases;
-  let phraseIdx = 0;
-  const motiveEl = document.getElementById('motiveLine');
-  function rotatePhrases() {
-    motiveEl.style.opacity = 0;
-    setTimeout(() => {
-      motiveEl.textContent   = phrases[phraseIdx % phrases.length];
-      motiveEl.style.opacity = 1;
-      phraseIdx++;
-    }, 400);
-  }
-  rotatePhrases();
-  setInterval(rotatePhrases, 7000);
-
-  /* ─── Генерируем звёзды ────────────────────────────────────── */
-  const starsEl = document.getElementById('stars');
-  for (let i = 0; i < 70; i++) {
-    const s   = document.createElement('div');
-    s.className = 'star';
-    const sz  = Math.random() * 2.5 + 0.5;
-    s.style.cssText =
-      `width:${sz}px;height:${sz}px;` +
-      `left:${Math.random()*100}%;top:${Math.random()*100}%;` +
-      `--d:${2+Math.random()*5}s;--dl:${Math.random()*6}s;` +
-      `--op:${0.25+Math.random()*0.65};`;
-    starsEl.appendChild(s);
-  }
-
-  /* ─── Плавающие частицы ─────────────────────────────────────── */
-  const PARTICLES = isRest ? ['💤','🌙','✨','☕','🍃'] : ['📖','✏️','⭐','🔥','💡'];
-  PARTICLES.forEach((ch, i) => {
-    const p = document.createElement('div');
-    p.className   = 'particle';
-    p.textContent = ch;
-    p.style.cssText =
-      `left:${10+i*18}%;bottom:${-5+Math.random()*10}%;` +
-      `--dur:${7+Math.random()*5}s;--dl2:${i*1.2}s;`;
-    document.body.appendChild(p);
-  });
-
-  /* ─── Форматирование времени ────────────────────────────────── */
-  function fmt(sec) {
-    const total = Math.floor(Math.abs(sec));
-    const h = Math.floor(total / 3600);
-    const m = Math.floor((total % 3600) / 60).toString().padStart(2, '0');
-    const s = (total % 60).toString().padStart(2, '0');
-    return h > 0 ? `${h}:${m}:${s}` : `${m}:${s}`;
-  }
-
-  /* ─── Основной цикл обновления ──────────────────────────────── */
-  const ringEl = document.getElementById('ringProg');
-  const ringGl = document.getElementById('ringGlow');
-  const timeEl = document.getElementById('timeDigits');
-  const barEl  = document.getElementById('progressBar');
-  let finished = false;
-
-  function tick() {
-    if (finished) return;
-
-    const elapsed   = (Date.now() - STARTED) / 1000;
-    const remaining = Math.max(0, DURATION - elapsed);
-    const progress  = remaining / DURATION;  // 1 → 0
-
-    timeEl.textContent = fmt(remaining);
-
-    // SVG ring: offset = CIRC × (1-progress) → пустеет
-    const offset = CIRC * (1 - progress);
-    ringEl.style.strokeDashoffset = offset;
-    ringGl.style.strokeDashoffset = offset;
-
-    // Полоска
-    barEl.style.width = (progress * 100) + '%';
-
-    if (remaining <= 0) {
-      finished = true;
-      showDone();
-      return;
-    }
-    requestAnimationFrame(tick);
-  }
-
-  /* ─── Завершение ────────────────────────────────────────────── */
-  function showDone() {
-    document.getElementById('stopTimerBtn').style.display = 'none';
-
-    // Плавно выключаем музыку
-    if (musicOn) {
-      stopLofi();
-      const btn = document.getElementById('musicBtn');
-      btn.textContent = '🎵';
-      btn.classList.remove('active');
-    }
-
-    const screen = document.getElementById('doneScreen');
-    screen.classList.add('show');
-
-    // Кольца разлёта
-    for (let i = 0; i < 4; i++) {
-      const r = document.createElement('div');
-      r.className = 'burst-ring';
-      r.style.cssText = `--bd:${1.2+i*0.3}s;--bdl:${i*0.15}s;`;
-      screen.appendChild(r);
-    }
-
-    // Отправляем данные в бот
-    if (tg) {
-      setTimeout(() => {
-        tg.sendData(JSON.stringify({ type: TYPE, done: true }));
-      }, 2000);
-    }
-  }
-
-  function stopTimerFromMiniApp() {
-    if (finished) return;
-
-    finished = true;
-    stopLofi();
-
-    const btn = document.getElementById('stopTimerBtn');
-    btn.disabled = true;
-    btn.textContent = '⏹ Остановлено';
-
-    if (tg) {
-      tg.sendData(JSON.stringify({ action: 'stop_timer', type: TYPE }));
-      setTimeout(() => tg.close(), 500);
-      return;
-    }
-
-    timeEl.textContent = '00:00';
-    barEl.style.width = '0%';
-    ringEl.style.strokeDashoffset = CIRC;
-    ringGl.style.strokeDashoffset = CIRC;
-  }
-
-  /* ─── Lo-fi аудио (HTML5 Audio) ───────────────────────────── */
-  // Файл lofi.mp3 должен лежать рядом с timer.html на GitHub Pages
-  let musicOn = false;
-  const audio = new Audio('./lofi.mp3');
-  audio.loop   = true;
-  audio.volume = 0.45;
-
-  function toggleMusic() {
-    const btn = document.getElementById('musicBtn');
-    if (musicOn) {
-      audio.pause();
-      musicOn = false;
-      btn.textContent = '🎵';
-      btn.classList.remove('active');
-    } else {
-      audio.play().then(() => {
-        musicOn = true;
-        btn.textContent = '🔇';
-        btn.classList.add('active');
-      }).catch(() => {
-        btn.textContent = '🎵';
-        btn.classList.remove('active');
-      });
-    }
-  }
-
-  function stopLofi() {
-    if (musicOn) {
-      audio.pause();
-      audio.currentTime = 0;
-      musicOn = false;
-    }
-  }
-
-  /* ─── Старт ─────────────────────────────────────────────────── */
-  tick();
+const tg=window.Telegram?.WebApp;if(tg){tg.expand();tg.ready();tg.setHeaderColor('#f7f7f4');tg.setBackgroundColor('#f7f7f4')}
+const params=new URLSearchParams(location.search),tgUser=tg?.initDataUnsafe?.user;
+const USER_ID=params.get('userId')||(tgUser?.id?String(tgUser.id):''),CHAT_ID=params.get('chatId')||USER_ID,API_BASE=(params.get('apiBase')||location.origin).replace(/\/$/,''),STATIC_MODE=location.hostname.includes('github.io')&&!params.get('apiBase'),STORE_KEY='student-mini-app-state-'+(USER_ID||'guest');
+const days=['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'];let state=null,rows=[],photo=null,tickTimer=null;const $=id=>document.getElementById(id);
+function notice(t,e=false){const n=$('notice');n.textContent=t;n.className='notice show'+(e?' error':'');clearTimeout(notice.t);notice.t=setTimeout(()=>n.className='notice',2600)}
+async function api(path,opt={}){if(!STATIC_MODE){try{const r=await fetch(API_BASE+path,{...opt,headers:opt.body?{'Content-Type':'application/json'}:{}}),d=await r.json().catch(()=>null);if(r.ok&&d?.ok)return d}catch{}}return localApi(path,opt)}
+function baseState(){return{ok:true,profile:{userId:Number(USER_ID)||0,firstName:tgUser?.first_name||'Студент',fatigueLevel:0,fatigueDescription:'Локальный режим',needsRest:false,workSessionsWithoutRest:0},timer:{active:false},tasks:[],schedulePhotoDataUrl:null,schedule:[]}}
+function getLocal(){try{return{...baseState(),...(JSON.parse(localStorage.getItem(STORE_KEY)||'{}'))}}catch{return baseState()}}
+function setLocal(s){localStorage.setItem(STORE_KEY,JSON.stringify({profile:s.profile,timer:s.timer,tasks:s.tasks,schedule:s.schedule,schedulePhotoDataUrl:s.schedulePhotoDataUrl}));return s}
+function reqBody(opt){try{return opt.body?JSON.parse(opt.body):{}}catch{return{}}}
+function sendBot(payload){if(!tg)return;try{tg.sendData(JSON.stringify(payload))}catch{}}
+async function localApi(path,opt={}){const clean=path.split('?')[0],b=reqBody(opt);let s=getLocal();if(clean==='/api/state')return s;if(clean==='/api/timer/start'){const now=Date.now(),mins=Number(b.minutes)||25,type=b.type==='rest'?'rest':'work';s.timer={active:true,id:emptyRow().id,type,durationMinutes:mins,startedAtUnixMs:now,startedAt:new Date(now).toISOString(),endsAt:new Date(now+mins*60000).toISOString(),remainingSeconds:mins*60};sendBot({action:'start_timer',type,minutes:mins})}else if(clean==='/api/timer/stop'){s.timer={active:false};sendBot({action:'stop_timer'})}else if(clean==='/api/tasks/add'){const task={id:emptyRow().id,shortId:emptyRow().id.slice(0,8),title:b.title||'',subject:b.subject||'',deadline:b.deadline||null,isCompleted:false,createdAt:new Date().toISOString()};s.tasks=[task,...(s.tasks||[])];sendBot({action:'add_task',title:task.title,subject:task.subject,deadline:task.deadline})}else if(clean==='/api/tasks/toggle'){s.tasks=(s.tasks||[]).map(t=>t.id===b.taskId?{...t,isCompleted:!!b.isCompleted}:t)}else if(clean==='/api/tasks/delete'){s.tasks=(s.tasks||[]).filter(t=>t.id!==b.taskId)}else if(clean==='/api/schedule/save'){s.schedule=b.entries||[];s.schedulePhotoDataUrl=b.photoDataUrl||null;sendBot({action:'save_schedule',entries:(s.schedule||[]).map(x=>({day:x.day,time:x.time,subject:x.subject,room:x.room,teacher:x.teacher,isPriority:!!x.isPriority}))})}else if(clean==='/api/schedule/clear'){s.schedule=[];s.schedulePhotoDataUrl=null;sendBot({action:'clear_schedule'})}return setLocal(s)}
+async function load(){if(!USER_ID){$('conn').textContent='Открой из Telegram';notice('Не вижу Telegram userId. Открой Mini App через кнопку бота.',true);return}try{state=await api('/api/state?userId='+encodeURIComponent(USER_ID));rows=(state.schedule||[]).map(x=>({...x}));photo=state.schedulePhotoDataUrl||null;render();$('conn').textContent='Готово: '+(state.profile.firstName||'студент')}catch{ $('conn').textContent='Нет связи с API';notice('Проверь WebAppUrl/ngrok и запущенный бот.',true)}}
+function render(){overview();timer();tasks();renderPhoto();table()}
+function overview(){const pending=(state.tasks||[]).filter(t=>!t.isCompleted).length;$('ovTasks').textContent=pending;$('ovSchedule').textContent=(state.schedule||[]).length;$('ovFatigue').textContent=state.profile.fatigueLevel+'%';$('ovFatigueMeta').textContent=state.profile.fatigueDescription;if(state.timer?.active){$('ovTimer').textContent=state.timer.type==='rest'?'Отдых':'Фокус';$('ovTimerMeta').textContent='Осталось '+fmt(state.timer.remainingSeconds||0)}else{$('ovTimer').textContent='Нет';$('ovTimerMeta').textContent='Можно запускать фокус или отдых.'}}
+function timer(){clearInterval(tickTimer);const t=state?.timer;if(!t?.active){$('time').textContent='00:00';$('timerLabel').textContent='не запущен';$('timerText').textContent='Выбери длительность, и бот запустит таймер с уведомлением в Telegram.';$('ring').style.setProperty('--p','0%');$('stop').disabled=true;return}$('stop').disabled=false;const total=Math.max(1,t.durationMinutes*60),started=t.startedAtUnixMs||Date.now(),label=t.type==='rest'?'отдых':'фокус';const tick=()=>{const rem=Math.max(0,total-Math.floor((Date.now()-started)/1000)),p=Math.max(0,Math.min(100,rem/total*100));$('time').textContent=fmt(rem);$('timerLabel').textContent=label;$('timerText').textContent=rem>0?'Завершится примерно в '+time(t.endsAt):'Таймер завершается, скоро придёт уведомление.';$('ring').style.setProperty('--p',p+'%');if(rem<=0)clearInterval(tickTimer)};tick();tickTimer=setInterval(tick,1000)}
+function tasks(){const list=$('taskList'),ts=state.tasks||[];list.innerHTML='';if(!ts.length){list.innerHTML='<div class="empty">Домашки пока нет. Добавь первое задание сверху.</div>';return}ts.forEach(t=>{const d=t.deadline?', дедлайн '+date(t.deadline):'',el=document.createElement('div');el.className='task '+(t.isCompleted?'done':'');el.innerHTML=`<div><h3>${esc(t.title)}</h3><div class="muted">${esc(t.subject)}${d}</div></div><div class="actions"><button class="${t.isCompleted?'secondary':'yellow'}" data-toggle="${t.id}">${t.isCompleted?'Вернуть':'Готово'}</button><button class="danger" data-delete="${t.id}">Удалить</button></div>`;list.appendChild(el)})}
+function renderPhoto(){const b=$('photoBox');b.innerHTML=photo?`<img src="${photo}" alt="Фото расписания">`:'<div class="placeholder">Фото появится здесь. Ниже можно сразу переписать пары в таблицу.</div>'}
+function table(){const body=$('scheduleBody');body.innerHTML='';if(!rows.length)rows.push(emptyRow());rows.forEach((r,i)=>{const tr=document.createElement('tr');tr.dataset.i=i;tr.innerHTML=`<td><select data-f="day">${days.map(d=>`<option ${r.day===d?'selected':''}>${d}</option>`).join('')}</select></td><td><input data-f="time" value="${attr(r.time)}" placeholder="09:00-10:30"></td><td><input data-f="subject" value="${attr(r.subject)}" placeholder="Название пары"></td><td><input data-f="room" value="${attr(r.room)}" placeholder="302 / онлайн"></td><td><input data-f="teacher" value="${attr(r.teacher)}" placeholder="Преподаватель"></td><td><label class="prio"><input data-f="isPriority" type="checkbox" ${r.isPriority?'checked':''}>Важно</label></td><td><button class="danger" data-remove="${i}">Удалить</button></td>`;body.appendChild(tr)})}
+async function start(type,min){min=Number(min);if(!Number.isInteger(min)||min<1||min>300){notice('Введи время от 1 до 300 минут.',true);return}try{state=await api('/api/timer/start',{method:'POST',body:JSON.stringify({userId:Number(USER_ID),chatId:Number(CHAT_ID),type,minutes:min})});render();tab('timers');notice(type==='rest'?'Таймер отдыха запущен.':'Рабочий таймер запущен.')}catch{notice('Не удалось запустить таймер.',true)}}
+async function stop(){try{state=await api('/api/timer/stop',{method:'POST',body:JSON.stringify({userId:Number(USER_ID),chatId:Number(CHAT_ID),timerId:state.timer?.id})});render();notice('Таймер остановлен.')}catch{notice('Не удалось остановить таймер.',true)}}
+async function addTask(){const title=$('taskTitle').value.trim(),subject=$('taskSubject').value.trim(),deadline=$('taskDeadline').value||null;if(!title||!subject){notice('Заполни название ДЗ и предмет.',true);return}try{state=await api('/api/tasks/add',{method:'POST',body:JSON.stringify({userId:Number(USER_ID),title,subject,deadline})});$('taskTitle').value='';$('taskSubject').value='';$('taskDeadline').value='';render();notice('Домашка добавлена.')}catch{notice('Не удалось добавить ДЗ.',true)}}
+async function toggleTask(id){const t=state.tasks.find(x=>x.id===id);if(!t)return;try{state=await api('/api/tasks/toggle',{method:'POST',body:JSON.stringify({userId:Number(USER_ID),taskId:id,isCompleted:!t.isCompleted})});render()}catch{notice('Не удалось обновить задачу.',true)}}
+async function delTask(id){try{state=await api('/api/tasks/delete',{method:'POST',body:JSON.stringify({userId:Number(USER_ID),taskId:id})});render();notice('Задача удалена.')}catch{notice('Не удалось удалить задачу.',true)}}
+function collect(){rows=[...$('scheduleBody').querySelectorAll('tr')].map(tr=>{const old=rows[Number(tr.dataset.i)]||emptyRow(),v=f=>tr.querySelector(`[data-f="${f}"]`);return{...old,day:v('day').value,time:v('time').value.trim(),subject:v('subject').value.trim(),room:v('room').value.trim(),teacher:v('teacher').value.trim(),isPriority:v('isPriority').checked}})}
+async function saveSchedule(){collect();try{state=await api('/api/schedule/save',{method:'POST',body:JSON.stringify({userId:Number(USER_ID),photoDataUrl:photo,entries:rows})});rows=(state.schedule||[]).map(x=>({...x}));photo=state.schedulePhotoDataUrl||null;render();notice('Расписание сохранено.')}catch{notice('Не удалось сохранить расписание.',true)}}
+async function clearSchedule(){try{state=await api('/api/schedule/clear',{method:'POST',body:JSON.stringify({userId:Number(USER_ID)})});rows=[];photo=null;$('photoInput').value='';render();notice('Расписание очищено.')}catch{notice('Не удалось очистить расписание.',true)}}
+function addRow(){collect();rows.push(emptyRow());table()}function removeRow(i){collect();rows.splice(i,1);table()}function emptyRow(){return{id:(crypto.randomUUID?crypto.randomUUID().replaceAll('-',''):String(Date.now()+Math.random())),day:days[0],time:'',subject:'',room:'',teacher:'',isPriority:false}}
+async function photoFile(file){if(!file)return;if(!file.type.startsWith('image/')){notice('Выбери изображение.',true);return}try{photo=await resize(file,1400,.86);renderPhoto();notice('Фото добавлено. Нажми сохранить, чтобы закрепить его.')}catch{notice('Не удалось загрузить фото.',true)}}
+function resize(file,max,q){return new Promise((res,rej)=>{const rd=new FileReader();rd.onerror=rej;rd.onload=()=>{const img=new Image();img.onerror=rej;img.onload=()=>{const s=Math.min(1,max/img.width),c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',q))};img.src=rd.result};rd.readAsDataURL(file)})}
+function tab(name){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===name))}
+function fmt(sec){sec=Math.max(0,Number(sec)||0);const h=Math.floor(sec/3600),m=String(Math.floor(sec%3600/60)).padStart(2,'0'),s=String(sec%60).padStart(2,'0');return h?`${h}:${m}:${s}`:`${m}:${s}`}
+function date(v){const [y,m,d]=v.split('-');return `${d}.${m}.${y}`}function time(v){const d=new Date(v);return Number.isNaN(d.getTime())?'':d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}
+function esc(v){return String(v||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#039;")}function attr(v){return esc(v).replaceAll('`','&#096;')}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>tab(b.dataset.tab));document.querySelectorAll('[data-start]').forEach(b=>b.onclick=()=>{const[x,y]=b.dataset.start.split(':');start(x,y)});$('refresh').onclick=load;$('stop').onclick=stop;$('workCustom').onclick=()=>start('work',$('workMin').value);$('restCustom').onclick=()=>start('rest',$('restMin').value);$('addTask').onclick=addTask;$('addRow').onclick=addRow;$('saveSchedule').onclick=saveSchedule;$('clearSchedule').onclick=clearSchedule;$('removePhoto').onclick=()=>{photo=null;$('photoInput').value='';renderPhoto()};$('photoInput').onchange=e=>photoFile(e.target.files?.[0]);$('taskList').onclick=e=>{const t=e.target.closest('[data-toggle]')?.dataset.toggle,d=e.target.closest('[data-delete]')?.dataset.delete;if(t)toggleTask(t);if(d)delTask(d)};$('scheduleBody').onclick=e=>{const r=e.target.closest('[data-remove]')?.dataset.remove;if(r!==undefined)removeRow(Number(r))};
+tab(params.get('view')==='timer'?'timers':(['overview','timers','tasks','schedule'].includes(params.get('view'))?params.get('view'):'overview'));load();
 </script>
 </body>
 </html>
