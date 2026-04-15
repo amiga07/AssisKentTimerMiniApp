@@ -7,20 +7,22 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
-      --bg: #edf5f0;
-      --bg-deep: #dfece6;
-      --surface: rgba(255, 255, 255, 0.82);
-      --surface-strong: #ffffff;
-      --ink: #17211e;
-      --muted: #66736e;
-      --line: rgba(33, 48, 43, 0.14);
-      --accent: #1f8f70;
-      --accent-dark: #14614d;
-      --rose: #d95f68;
-      --sky: #4b7fd8;
-      --sun: #e8b93f;
-      --shadow: 0 18px 42px rgba(23, 33, 30, 0.12);
-      --soft-shadow: 0 10px 24px rgba(23, 33, 30, 0.08);
+      --bg: #10130f;
+      --bg-deep: #181d17;
+      --paper: #f1ead2;
+      --paper-soft: #fbf6e6;
+      --surface: #f1ead2;
+      --surface-strong: #fffaf0;
+      --ink: #11140f;
+      --muted: #5f6257;
+      --line: #11140f;
+      --accent: #b7ff5a;
+      --accent-dark: #4b7f2d;
+      --rose: #ff6b57;
+      --sky: #63d6ff;
+      --sun: #ffd84d;
+      --shadow: 8px 8px 0 #11140f;
+      --soft-shadow: 5px 5px 0 #11140f;
     }
 
     * {
@@ -35,10 +37,10 @@
       min-height: 100%;
       margin: 0;
       padding: 16px 16px 34px;
-      color: var(--ink);
+      color: var(--paper);
       background:
-        linear-gradient(135deg, rgba(31, 143, 112, 0.12), transparent 36%),
-        linear-gradient(225deg, rgba(217, 95, 104, 0.11), transparent 34%),
+        radial-gradient(circle at 14% 10%, rgba(183, 255, 90, 0.20), transparent 23%),
+        radial-gradient(circle at 88% 6%, rgba(99, 214, 255, 0.18), transparent 24%),
         linear-gradient(180deg, var(--bg), var(--bg-deep));
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       letter-spacing: 0;
@@ -52,10 +54,10 @@
       z-index: -1;
       pointer-events: none;
       background-image:
-        linear-gradient(rgba(23, 33, 30, 0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(23, 33, 30, 0.035) 1px, transparent 1px);
-      background-size: 28px 28px;
-      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent);
+        linear-gradient(rgba(241, 234, 210, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(241, 234, 210, 0.08) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), transparent 84%);
     }
 
     button,
@@ -67,19 +69,20 @@
 
     button {
       min-height: 42px;
-      border: 0;
+      border: 2px solid var(--line);
       border-radius: 8px;
       padding: 10px 14px;
-      color: #fff;
+      color: var(--ink);
       background: var(--accent);
       font-weight: 800;
       cursor: pointer;
-      box-shadow: 0 10px 18px rgba(31, 143, 112, 0.18);
+      box-shadow: 4px 4px 0 var(--line);
       transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
     }
 
     button:active {
-      transform: translateY(1px) scale(0.99);
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 var(--line);
     }
 
     button:disabled {
@@ -97,14 +100,14 @@
       border-radius: 8px;
       padding: 9px 11px;
       color: var(--ink);
-      background: rgba(255, 255, 255, 0.88);
+      background: var(--paper-soft);
       outline: none;
     }
 
     input:focus,
     select:focus {
       border-color: rgba(31, 143, 112, 0.58);
-      box-shadow: 0 0 0 3px rgba(31, 143, 112, 0.12);
+      box-shadow: 0 0 0 3px rgba(183, 255, 90, 0.28);
     }
 
     label {
@@ -127,17 +130,19 @@
       gap: 14px;
       margin-bottom: 14px;
       padding: 14px;
-      border: 1px solid var(--line);
+      border: 2px solid var(--line);
       border-radius: 8px;
-      background: rgba(255, 255, 255, 0.62);
+      color: var(--ink);
+      background: var(--paper);
       box-shadow: var(--soft-shadow);
-      backdrop-filter: blur(18px);
     }
 
     .top h1 {
       margin: 0;
-      font-size: 28px;
+      font-size: 34px;
       line-height: 1.1;
+      letter-spacing: 0;
+      text-transform: uppercase;
     }
 
     .muted {
@@ -148,13 +153,14 @@
     .pill {
       flex: 0 0 auto;
       max-width: 260px;
-      border: 1px solid var(--line);
+      border: 2px solid var(--line);
       border-radius: 8px;
       padding: 10px 12px;
-      color: var(--accent-dark);
-      background: rgba(255, 255, 255, 0.78);
+      color: var(--ink);
+      background: var(--accent);
       font-size: 13px;
       font-weight: 850;
+      box-shadow: 4px 4px 0 var(--line);
     }
 
     .tabs {
@@ -165,21 +171,20 @@
       grid-template-columns: repeat(4, 1fr);
       gap: 8px;
       padding: 8px 0 14px;
-      background: linear-gradient(180deg, var(--bg), rgba(237, 245, 240, 0.88));
-      backdrop-filter: blur(12px);
+      background: linear-gradient(180deg, rgba(16, 19, 15, 0.98), rgba(16, 19, 15, 0.82));
     }
 
     .tab {
-      color: var(--ink);
-      background: rgba(255, 255, 255, 0.76);
-      border: 1px solid var(--line);
+      color: var(--paper);
+      background: #20251d;
+      border: 2px solid var(--paper);
       box-shadow: none;
     }
 
     .tab.active {
-      color: #fff;
-      background: var(--ink);
-      border-color: var(--ink);
+      color: var(--ink);
+      background: var(--sun);
+      border-color: var(--paper);
     }
 
     .screen {
@@ -209,7 +214,7 @@
       border-radius: 8px;
       background: var(--surface);
       box-shadow: var(--shadow);
-      backdrop-filter: blur(18px);
+      color: var(--ink);
     }
 
     .band {
@@ -223,8 +228,8 @@
       justify-content: space-between;
       gap: 10px;
       padding: 13px 14px;
-      border-bottom: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.46);
+      border-bottom: 2px solid var(--line);
+      background: var(--paper-soft);
     }
 
     .head h2 {
@@ -272,7 +277,7 @@
       place-items: center;
       position: relative;
       background: conic-gradient(var(--accent) var(--p, 0%), rgba(23, 33, 30, 0.10) 0);
-      box-shadow: inset 0 0 0 1px var(--line), 0 18px 34px rgba(31, 143, 112, 0.12);
+      box-shadow: inset 0 0 0 2px var(--line), 8px 8px 0 var(--line);
     }
 
     .ring::after {
@@ -281,7 +286,7 @@
       inset: 16px;
       border: 1px solid var(--line);
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.82);
+      background: var(--paper-soft);
     }
 
     .center {
@@ -315,13 +320,13 @@
 
     .secondary {
       color: var(--ink);
-      background: rgba(255, 255, 255, 0.76);
-      border: 1px solid var(--line);
+      background: var(--paper-soft);
+      border: 2px solid var(--line);
       box-shadow: none;
     }
 
-    .danger { background: var(--rose); }
-    .blue { background: var(--sky); }
+    .danger { background: var(--rose); color: var(--ink); }
+    .blue { background: var(--sky); color: var(--ink); }
     .yellow { color: #241b04; background: var(--sun); }
 
     .music {
@@ -329,11 +334,13 @@
     }
 
     .music button {
+      color: var(--paper);
       background: var(--ink);
-      box-shadow: none;
+      box-shadow: 4px 4px 0 var(--line);
     }
 
     .music button.active {
+      color: var(--ink);
       background: var(--rose);
     }
 
@@ -352,7 +359,7 @@
 
     .task.done {
       opacity: 0.66;
-      background: rgba(255, 255, 255, 0.52);
+      background: var(--paper-soft);
     }
 
     .task h3 {
@@ -376,7 +383,7 @@
       border-radius: 8px;
       padding: 15px;
       color: var(--muted);
-      background: rgba(255, 255, 255, 0.56);
+      background: var(--paper-soft);
     }
 
     .photo-tools {
@@ -388,9 +395,9 @@
 
     .photo {
       margin-top: 12px;
-      border: 1px solid var(--line);
+      border: 2px solid var(--line);
       border-radius: 8px;
-      background: rgba(255, 255, 255, 0.72);
+      background: var(--paper-soft);
       overflow: hidden;
     }
 
@@ -399,7 +406,7 @@
       width: 100%;
       max-height: 520px;
       object-fit: contain;
-      background: rgba(23, 33, 30, 0.06);
+      background: rgba(17, 20, 15, 0.08);
     }
 
     .placeholder {
@@ -410,9 +417,9 @@
     .table-wrap {
       width: 100%;
       overflow-x: auto;
-      border: 1px solid var(--line);
+      border: 2px solid var(--line);
       border-radius: 8px;
-      background: rgba(255, 255, 255, 0.72);
+      background: var(--paper-soft);
     }
 
     table {
@@ -424,14 +431,14 @@
     th,
     td {
       padding: 8px;
-      border-bottom: 1px solid var(--line);
+      border-bottom: 2px solid var(--line);
       text-align: left;
       vertical-align: middle;
     }
 
     th {
       color: var(--muted);
-      background: rgba(255, 255, 255, 0.54);
+      background: var(--sun);
       font-size: 13px;
     }
 
@@ -1129,13 +1136,21 @@
     }
 
     function playMusic() {
+      audio.pause();
+      audio.currentTime = 0;
       audio.src = tracks[trackIndex].src;
+      audio.load();
+
       audio.play()
         .then(() => {
           musicOn = true;
           updateMusic();
         })
-        .catch(() => showNotice("Telegram может попросить нажать кнопку музыки ещё раз.", true));
+        .catch(() => {
+          musicOn = false;
+          updateMusic();
+          showNotice("Не удалось включить трек. Проверь, что mp3 загружен рядом с timer.html.", true);
+        });
     }
 
     function toggleMusic() {
@@ -1149,13 +1164,16 @@
 
     function stopMusic() {
       audio.pause();
+      audio.currentTime = 0;
       musicOn = false;
       updateMusic();
     }
 
     function nextTrack() {
       trackIndex = (trackIndex + 1) % tracks.length;
-      if (musicOn) playMusic();
+      if (musicOn) {
+        playMusic();
+      }
       updateMusic();
     }
 
