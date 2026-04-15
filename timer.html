@@ -1,69 +1,1428 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Student Mini App</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<style>
-*{box-sizing:border-box}body{margin:0;padding:14px 14px 30px;background:#f7f7f4;color:#17211e;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:0}button,input,select{font:inherit;letter-spacing:0}button{min-height:42px;border:0;border-radius:8px;padding:10px 13px;background:#168a64;color:#fff;font-weight:800;cursor:pointer}button:active{transform:scale(.98)}button:disabled{opacity:.5}.secondary{background:#e9eeeb;color:#17211e;border:1px solid #d9e1dc}.danger{background:#c73232}.blue{background:#3267d6}.yellow{background:#f1b43a;color:#241b04}input,select{width:100%;min-height:42px;border:1px solid #d9e1dc;border-radius:8px;padding:9px 11px;background:#fff;color:#17211e}label{display:block;margin:0 0 6px;color:#68736f;font-size:13px;font-weight:800}.app{max-width:1120px;margin:auto}.top{display:flex;justify-content:space-between;gap:12px;margin-bottom:12px}.top h1{margin:0;font-size:26px;line-height:1.1}.muted{color:#68736f;line-height:1.35}.pill,.band,.metric,.task{border:1px solid #d9e1dc;border-radius:8px;background:#fff;box-shadow:0 10px 24px #18211f14}.pill{padding:10px 12px;font-weight:800;max-width:240px}.tabs{position:sticky;top:0;z-index:5;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:8px 0 14px;background:#f7f7f4}.tab{background:#fff;color:#17211e;border:1px solid #d9e1dc}.tab.active{background:#17211e;color:#fff}.screen{display:none}.screen.active{display:block}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c12{grid-column:span 12}.band{margin-bottom:14px;overflow:hidden}.head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px;border-bottom:1px solid #d9e1dc;background:#eef6f1}.head h2{margin:0;font-size:18px}.body{padding:13px}.metric{min-height:100px;padding:14px}.metric b{display:block;color:#68736f;font-size:13px}.metric strong{display:block;margin-top:8px;font-size:24px;overflow-wrap:anywhere}.timer{display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:center}.ring{width:210px;height:210px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#168a64 var(--p,0%),#e4ebe7 0);position:relative}.ring:after{content:"";position:absolute;inset:16px;border-radius:50%;background:#fff;border:1px solid #d9e1dc}.center{position:relative;z-index:1;text-align:center}.time{display:block;font-size:34px;font-weight:950}.row{display:flex;flex-wrap:wrap;gap:8px}.inline{display:grid;grid-template-columns:minmax(120px,1fr) auto;gap:8px;margin-top:10px}.tasks{display:grid;gap:10px}.task{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px}.task.done{opacity:.65;background:#f3f5f3}.task h3{margin:0;font-size:16px;overflow-wrap:anywhere}.actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.actions button{min-height:36px;padding:8px 10px;font-size:13px}.empty{border:1px dashed #d9e1dc;border-radius:8px;padding:15px;background:#fff;color:#68736f}.photo-tools{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end}.photo{margin-top:12px;border:1px solid #d9e1dc;border-radius:8px;background:#fff;overflow:hidden}.photo img{display:block;width:100%;max-height:520px;object-fit:contain;background:#eef1ee}.placeholder{padding:18px;color:#68736f}.table-wrap{overflow-x:auto;border:1px solid #d9e1dc;border-radius:8px;background:#fff}table{width:100%;min-width:860px;border-collapse:collapse}th,td{padding:8px;border-bottom:1px solid #d9e1dc;text-align:left}th{background:#f3f6f4;color:#68736f;font-size:13px}td input,td select{min-height:38px;padding:7px 9px}.prio{display:flex;gap:8px;align-items:center;font-weight:800;font-size:13px}.prio input{width:18px;height:18px;min-height:18px;accent-color:#e4574f}.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.notice{position:fixed;left:14px;right:14px;bottom:14px;z-index:9;display:none;max-width:760px;margin:auto;border-radius:8px;padding:12px 14px;background:#17211e;color:#fff;font-weight:800}.notice.show{display:block}.notice.error{background:#c73232}@media(max-width:760px){body{padding:12px 12px 28px}.top{display:block}.pill{max-width:none;margin-top:10px}.tabs{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.c3,.c4,.c5,.c6,.c12{grid-column:span 1}.timer{grid-template-columns:1fr;justify-items:center}.inline,.photo-tools{grid-template-columns:1fr}.task{grid-template-columns:1fr}.actions{justify-content:flex-start}}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Student Mini App</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg: #edf5f0;
+      --bg-deep: #dfece6;
+      --surface: rgba(255, 255, 255, 0.82);
+      --surface-strong: #ffffff;
+      --ink: #17211e;
+      --muted: #66736e;
+      --line: rgba(33, 48, 43, 0.14);
+      --accent: #1f8f70;
+      --accent-dark: #14614d;
+      --rose: #d95f68;
+      --sky: #4b7fd8;
+      --sun: #e8b93f;
+      --shadow: 0 18px 42px rgba(23, 33, 30, 0.12);
+      --soft-shadow: 0 10px 24px rgba(23, 33, 30, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-height: 100%;
+    }
+
+    body {
+      min-height: 100%;
+      margin: 0;
+      padding: 16px 16px 34px;
+      color: var(--ink);
+      background:
+        linear-gradient(135deg, rgba(31, 143, 112, 0.12), transparent 36%),
+        linear-gradient(225deg, rgba(217, 95, 104, 0.11), transparent 34%),
+        linear-gradient(180deg, var(--bg), var(--bg-deep));
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(23, 33, 30, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(23, 33, 30, 0.035) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+      letter-spacing: 0;
+    }
+
+    button {
+      min-height: 42px;
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #fff;
+      background: var(--accent);
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 10px 18px rgba(31, 143, 112, 0.18);
+      transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
+    }
+
+    button:active {
+      transform: translateY(1px) scale(0.99);
+    }
+
+    button:disabled {
+      cursor: default;
+      opacity: 0.5;
+      transform: none;
+      box-shadow: none;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 9px 11px;
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.88);
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: rgba(31, 143, 112, 0.58);
+      box-shadow: 0 0 0 3px rgba(31, 143, 112, 0.12);
+    }
+
+    label {
+      display: block;
+      margin: 0 0 6px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .app {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+    }
+
+    .top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 14px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.62);
+      box-shadow: var(--soft-shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .top h1 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.1;
+    }
+
+    .muted {
+      color: var(--muted);
+      line-height: 1.38;
+    }
+
+    .pill {
+      flex: 0 0 auto;
+      max-width: 260px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--accent-dark);
+      background: rgba(255, 255, 255, 0.78);
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .tabs {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      padding: 8px 0 14px;
+      background: linear-gradient(180deg, var(--bg), rgba(237, 245, 240, 0.88));
+      backdrop-filter: blur(12px);
+    }
+
+    .tab {
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.76);
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+
+    .tab.active {
+      color: #fff;
+      background: var(--ink);
+      border-color: var(--ink);
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 12px;
+    }
+
+    .c3 { grid-column: span 3; }
+    .c4 { grid-column: span 4; }
+    .c5 { grid-column: span 5; }
+    .c6 { grid-column: span 6; }
+    .c12 { grid-column: span 12; }
+
+    .band,
+    .metric,
+    .task {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .band {
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+
+    .head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.46);
+    }
+
+    .head h2 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .body {
+      padding: 14px;
+    }
+
+    .metric {
+      min-height: 112px;
+      padding: 15px;
+    }
+
+    .metric b {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 28px;
+      line-height: 1;
+      overflow-wrap: anywhere;
+    }
+
+    .timer {
+      display: grid;
+      grid-template-columns: 230px minmax(0, 1fr);
+      gap: 18px;
+      align-items: center;
+    }
+
+    .ring {
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      position: relative;
+      background: conic-gradient(var(--accent) var(--p, 0%), rgba(23, 33, 30, 0.10) 0);
+      box-shadow: inset 0 0 0 1px var(--line), 0 18px 34px rgba(31, 143, 112, 0.12);
+    }
+
+    .ring::after {
+      content: "";
+      position: absolute;
+      inset: 16px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.82);
+    }
+
+    .center {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .time {
+      display: block;
+      font-size: 38px;
+      font-weight: 950;
+      line-height: 1;
+    }
+
+    .row,
+    .music,
+    .toolbar,
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .inline {
+      display: grid;
+      grid-template-columns: minmax(120px, 1fr) auto;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .secondary {
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.76);
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+
+    .danger { background: var(--rose); }
+    .blue { background: var(--sky); }
+    .yellow { color: #241b04; background: var(--sun); }
+
+    .music {
+      margin-top: 12px;
+    }
+
+    .music button {
+      background: var(--ink);
+      box-shadow: none;
+    }
+
+    .music button.active {
+      background: var(--rose);
+    }
+
+    .tasks {
+      display: grid;
+      gap: 10px;
+    }
+
+    .task {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      padding: 12px;
+    }
+
+    .task.done {
+      opacity: 0.66;
+      background: rgba(255, 255, 255, 0.52);
+    }
+
+    .task h3 {
+      margin: 0;
+      font-size: 16px;
+      overflow-wrap: anywhere;
+    }
+
+    .actions {
+      justify-content: flex-end;
+    }
+
+    .actions button {
+      min-height: 36px;
+      padding: 8px 10px;
+      font-size: 13px;
+    }
+
+    .empty {
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      padding: 15px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.56);
+    }
+
+    .photo-tools {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .photo {
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.72);
+      overflow: hidden;
+    }
+
+    .photo img {
+      display: block;
+      width: 100%;
+      max-height: 520px;
+      object-fit: contain;
+      background: rgba(23, 33, 30, 0.06);
+    }
+
+    .placeholder {
+      padding: 18px;
+      color: var(--muted);
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    table {
+      width: 100%;
+      min-width: 880px;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 8px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.54);
+      font-size: 13px;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    td input,
+    td select {
+      min-height: 38px;
+      padding: 7px 9px;
+    }
+
+    .prio {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .prio input {
+      width: 18px;
+      min-height: 18px;
+      height: 18px;
+      accent-color: var(--rose);
+    }
+
+    .toolbar {
+      margin-top: 12px;
+    }
+
+    .notice {
+      position: fixed;
+      left: 14px;
+      right: 14px;
+      bottom: 14px;
+      z-index: 50;
+      display: none;
+      max-width: 760px;
+      margin: auto;
+      border-radius: 8px;
+      padding: 12px 14px;
+      color: #fff;
+      background: var(--ink);
+      font-weight: 800;
+      box-shadow: var(--shadow);
+    }
+
+    .notice.show {
+      display: block;
+    }
+
+    .notice.error {
+      background: var(--rose);
+    }
+
+    @media (max-width: 760px) {
+      body {
+        padding: 12px 12px 28px;
+      }
+
+      .top {
+        display: block;
+      }
+
+      .pill {
+        max-width: none;
+        margin-top: 10px;
+      }
+
+      .tabs {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .c3,
+      .c4,
+      .c5,
+      .c6,
+      .c12 {
+        grid-column: span 1;
+      }
+
+      .timer {
+        grid-template-columns: 1fr;
+        justify-items: center;
+      }
+
+      .inline,
+      .photo-tools {
+        grid-template-columns: 1fr;
+      }
+
+      .task {
+        grid-template-columns: 1fr;
+      }
+
+      .actions {
+        justify-content: flex-start;
+      }
+    }
+  </style>
 </head>
 <body>
-<main class="app">
-<header class="top"><div><h1>Учёба под рукой</h1><div class="muted">Таймеры, домашка и расписание в одном Mini App.</div></div><div class="pill" id="conn">Подключаюсь...</div></header>
-<nav class="tabs"><button class="tab active" data-tab="overview">Обзор</button><button class="tab" data-tab="timers">Таймеры</button><button class="tab" data-tab="tasks">ДЗ</button><button class="tab" data-tab="schedule">Расписание</button></nav>
-<section class="screen active" id="overview"><div class="grid"><div class="metric c3"><b>Таймер</b><strong id="ovTimer">Нет</strong><span class="muted" id="ovTimerMeta">Можно запускать фокус или отдых.</span></div><div class="metric c3"><b>Усталость</b><strong id="ovFatigue">0%</strong><span class="muted" id="ovFatigueMeta">Появится после сессий.</span></div><div class="metric c3"><b>Домашка</b><strong id="ovTasks">0</strong><span class="muted">активных задач</span></div><div class="metric c3"><b>Расписание</b><strong id="ovSchedule">0</strong><span class="muted">строк в таблице</span></div></div></section>
-<section class="screen" id="timers">
-<div class="band"><div class="head"><h2>Текущий таймер</h2><button class="secondary" id="refresh">Обновить</button></div><div class="body timer"><div class="ring" id="ring"><div class="center"><span class="time" id="time">00:00</span><b id="timerLabel">не запущен</b></div></div><div><p class="muted" id="timerText">Выбери длительность, и бот запустит таймер с уведомлением в Telegram.</p><button class="danger" id="stop">Остановить таймер</button></div></div></div>
-<div class="grid"><div class="band c6"><div class="head"><h2>Фокус</h2></div><div class="body"><div class="row"><button data-start="work:25">25 мин</button><button data-start="work:30">30 мин</button><button data-start="work:45">45 мин</button><button data-start="work:60">60 мин</button></div><div class="inline"><input id="workMin" type="number" min="1" max="300" placeholder="Своё время в минутах"><button id="workCustom">Запустить</button></div></div></div><div class="band c6"><div class="head"><h2>Отдых</h2></div><div class="body"><div class="row"><button class="blue" data-start="rest:5">5 мин</button><button class="blue" data-start="rest:15">15 мин</button><button class="blue" data-start="rest:30">30 мин</button></div><div class="inline"><input id="restMin" type="number" min="1" max="300" placeholder="Своё время отдыха"><button class="blue" id="restCustom">Запустить</button></div></div></div></div>
-</section>
-<section class="screen" id="tasks">
-<div class="band"><div class="head"><h2>Добавить ДЗ</h2></div><div class="body"><div class="grid"><div class="c5"><label>Что нужно сделать</label><input id="taskTitle" placeholder="Решить задачи 12-18"></div><div class="c4"><label>Предмет</label><input id="taskSubject" placeholder="Математика"></div><div class="c3"><label>Дедлайн</label><input id="taskDeadline" type="date"></div><div class="c12"><button id="addTask">Добавить домашку</button></div></div></div></div>
-<div class="band"><div class="head"><h2>Список ДЗ</h2></div><div class="body"><div class="tasks" id="taskList"></div></div></div>
-</section>
-<section class="screen" id="schedule">
-<div class="band"><div class="head"><h2>Фото расписания</h2></div><div class="body"><div class="photo-tools"><div><label>Вставь фото расписания</label><input id="photoInput" type="file" accept="image/*"></div><button class="secondary" id="removePhoto">Убрать фото</button></div><div class="photo" id="photoBox"><div class="placeholder">Фото появится здесь. Ниже можно сразу переписать пары в таблицу.</div></div></div></div>
-<div class="band"><div class="head"><h2>Таблица расписания</h2><button id="addRow">Добавить строку</button></div><div class="body"><div class="table-wrap"><table><thead><tr><th>День</th><th>Время пары</th><th>Название предмета</th><th>Аудитория</th><th>Преподаватель</th><th>Приоритетный</th><th>Действие</th></tr></thead><tbody id="scheduleBody"></tbody></table></div><div class="toolbar"><button id="saveSchedule">Сохранить расписание</button><button class="danger" id="clearSchedule">Очистить</button></div></div></div>
-</section>
-</main><div class="notice" id="notice"></div>
-<script>
-const tg=window.Telegram?.WebApp;if(tg){tg.expand();tg.ready();tg.setHeaderColor('#f7f7f4');tg.setBackgroundColor('#f7f7f4')}
-const params=new URLSearchParams(location.search),tgUser=tg?.initDataUnsafe?.user;
-const USER_ID=params.get('userId')||(tgUser?.id?String(tgUser.id):''),CHAT_ID=params.get('chatId')||USER_ID,API_BASE=(params.get('apiBase')||location.origin).replace(/\/$/,''),STATIC_MODE=location.hostname.includes('github.io')&&!params.get('apiBase'),STORE_KEY='student-mini-app-state-'+(USER_ID||'guest');
-const days=['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'];let state=null,rows=[],photo=null,tickTimer=null;const $=id=>document.getElementById(id);
-function notice(t,e=false){const n=$('notice');n.textContent=t;n.className='notice show'+(e?' error':'');clearTimeout(notice.t);notice.t=setTimeout(()=>n.className='notice',2600)}
-async function api(path,opt={}){if(!STATIC_MODE){try{const r=await fetch(API_BASE+path,{...opt,headers:opt.body?{'Content-Type':'application/json'}:{}}),d=await r.json().catch(()=>null);if(r.ok&&d?.ok)return d}catch{}}return localApi(path,opt)}
-function baseState(){return{ok:true,profile:{userId:Number(USER_ID)||0,firstName:tgUser?.first_name||'Студент',fatigueLevel:0,fatigueDescription:'Локальный режим',needsRest:false,workSessionsWithoutRest:0},timer:{active:false},tasks:[],schedulePhotoDataUrl:null,schedule:[]}}
-function getLocal(){try{return{...baseState(),...(JSON.parse(localStorage.getItem(STORE_KEY)||'{}'))}}catch{return baseState()}}
-function setLocal(s){localStorage.setItem(STORE_KEY,JSON.stringify({profile:s.profile,timer:s.timer,tasks:s.tasks,schedule:s.schedule,schedulePhotoDataUrl:s.schedulePhotoDataUrl}));return s}
-function reqBody(opt){try{return opt.body?JSON.parse(opt.body):{}}catch{return{}}}
-function sendBot(payload){if(!tg)return;try{tg.sendData(JSON.stringify(payload))}catch{}}
-async function localApi(path,opt={}){const clean=path.split('?')[0],b=reqBody(opt);let s=getLocal();if(clean==='/api/state')return s;if(clean==='/api/timer/start'){const now=Date.now(),mins=Number(b.minutes)||25,type=b.type==='rest'?'rest':'work';s.timer={active:true,id:emptyRow().id,type,durationMinutes:mins,startedAtUnixMs:now,startedAt:new Date(now).toISOString(),endsAt:new Date(now+mins*60000).toISOString(),remainingSeconds:mins*60};sendBot({action:'start_timer',type,minutes:mins})}else if(clean==='/api/timer/stop'){s.timer={active:false};sendBot({action:'stop_timer'})}else if(clean==='/api/tasks/add'){const task={id:emptyRow().id,shortId:emptyRow().id.slice(0,8),title:b.title||'',subject:b.subject||'',deadline:b.deadline||null,isCompleted:false,createdAt:new Date().toISOString()};s.tasks=[task,...(s.tasks||[])];sendBot({action:'add_task',title:task.title,subject:task.subject,deadline:task.deadline})}else if(clean==='/api/tasks/toggle'){s.tasks=(s.tasks||[]).map(t=>t.id===b.taskId?{...t,isCompleted:!!b.isCompleted}:t)}else if(clean==='/api/tasks/delete'){s.tasks=(s.tasks||[]).filter(t=>t.id!==b.taskId)}else if(clean==='/api/schedule/save'){s.schedule=b.entries||[];s.schedulePhotoDataUrl=b.photoDataUrl||null;sendBot({action:'save_schedule',entries:(s.schedule||[]).map(x=>({day:x.day,time:x.time,subject:x.subject,room:x.room,teacher:x.teacher,isPriority:!!x.isPriority}))})}else if(clean==='/api/schedule/clear'){s.schedule=[];s.schedulePhotoDataUrl=null;sendBot({action:'clear_schedule'})}return setLocal(s)}
-async function load(){if(!USER_ID){$('conn').textContent='Открой из Telegram';notice('Не вижу Telegram userId. Открой Mini App через кнопку бота.',true);return}try{state=await api('/api/state?userId='+encodeURIComponent(USER_ID));rows=(state.schedule||[]).map(x=>({...x}));photo=state.schedulePhotoDataUrl||null;render();$('conn').textContent='Готово: '+(state.profile.firstName||'студент')}catch{ $('conn').textContent='Нет связи с API';notice('Проверь WebAppUrl/ngrok и запущенный бот.',true)}}
-function render(){overview();timer();tasks();renderPhoto();table()}
-function overview(){const pending=(state.tasks||[]).filter(t=>!t.isCompleted).length;$('ovTasks').textContent=pending;$('ovSchedule').textContent=(state.schedule||[]).length;$('ovFatigue').textContent=state.profile.fatigueLevel+'%';$('ovFatigueMeta').textContent=state.profile.fatigueDescription;if(state.timer?.active){$('ovTimer').textContent=state.timer.type==='rest'?'Отдых':'Фокус';$('ovTimerMeta').textContent='Осталось '+fmt(state.timer.remainingSeconds||0)}else{$('ovTimer').textContent='Нет';$('ovTimerMeta').textContent='Можно запускать фокус или отдых.'}}
-function timer(){clearInterval(tickTimer);const t=state?.timer;if(!t?.active){$('time').textContent='00:00';$('timerLabel').textContent='не запущен';$('timerText').textContent='Выбери длительность, и бот запустит таймер с уведомлением в Telegram.';$('ring').style.setProperty('--p','0%');$('stop').disabled=true;return}$('stop').disabled=false;const total=Math.max(1,t.durationMinutes*60),started=t.startedAtUnixMs||Date.now(),label=t.type==='rest'?'отдых':'фокус';const tick=()=>{const rem=Math.max(0,total-Math.floor((Date.now()-started)/1000)),p=Math.max(0,Math.min(100,rem/total*100));$('time').textContent=fmt(rem);$('timerLabel').textContent=label;$('timerText').textContent=rem>0?'Завершится примерно в '+time(t.endsAt):'Таймер завершается, скоро придёт уведомление.';$('ring').style.setProperty('--p',p+'%');if(rem<=0)clearInterval(tickTimer)};tick();tickTimer=setInterval(tick,1000)}
-function tasks(){const list=$('taskList'),ts=state.tasks||[];list.innerHTML='';if(!ts.length){list.innerHTML='<div class="empty">Домашки пока нет. Добавь первое задание сверху.</div>';return}ts.forEach(t=>{const d=t.deadline?', дедлайн '+date(t.deadline):'',el=document.createElement('div');el.className='task '+(t.isCompleted?'done':'');el.innerHTML=`<div><h3>${esc(t.title)}</h3><div class="muted">${esc(t.subject)}${d}</div></div><div class="actions"><button class="${t.isCompleted?'secondary':'yellow'}" data-toggle="${t.id}">${t.isCompleted?'Вернуть':'Готово'}</button><button class="danger" data-delete="${t.id}">Удалить</button></div>`;list.appendChild(el)})}
-function renderPhoto(){const b=$('photoBox');b.innerHTML=photo?`<img src="${photo}" alt="Фото расписания">`:'<div class="placeholder">Фото появится здесь. Ниже можно сразу переписать пары в таблицу.</div>'}
-function table(){const body=$('scheduleBody');body.innerHTML='';if(!rows.length)rows.push(emptyRow());rows.forEach((r,i)=>{const tr=document.createElement('tr');tr.dataset.i=i;tr.innerHTML=`<td><select data-f="day">${days.map(d=>`<option ${r.day===d?'selected':''}>${d}</option>`).join('')}</select></td><td><input data-f="time" value="${attr(r.time)}" placeholder="09:00-10:30"></td><td><input data-f="subject" value="${attr(r.subject)}" placeholder="Название пары"></td><td><input data-f="room" value="${attr(r.room)}" placeholder="302 / онлайн"></td><td><input data-f="teacher" value="${attr(r.teacher)}" placeholder="Преподаватель"></td><td><label class="prio"><input data-f="isPriority" type="checkbox" ${r.isPriority?'checked':''}>Важно</label></td><td><button class="danger" data-remove="${i}">Удалить</button></td>`;body.appendChild(tr)})}
-async function start(type,min){min=Number(min);if(!Number.isInteger(min)||min<1||min>300){notice('Введи время от 1 до 300 минут.',true);return}try{state=await api('/api/timer/start',{method:'POST',body:JSON.stringify({userId:Number(USER_ID),chatId:Number(CHAT_ID),type,minutes:min})});render();tab('timers');notice(type==='rest'?'Таймер отдыха запущен.':'Рабочий таймер запущен.')}catch{notice('Не удалось запустить таймер.',true)}}
-async function stop(){try{state=await api('/api/timer/stop',{method:'POST',body:JSON.stringify({userId:Number(USER_ID),chatId:Number(CHAT_ID),timerId:state.timer?.id})});render();notice('Таймер остановлен.')}catch{notice('Не удалось остановить таймер.',true)}}
-async function addTask(){const title=$('taskTitle').value.trim(),subject=$('taskSubject').value.trim(),deadline=$('taskDeadline').value||null;if(!title||!subject){notice('Заполни название ДЗ и предмет.',true);return}try{state=await api('/api/tasks/add',{method:'POST',body:JSON.stringify({userId:Number(USER_ID),title,subject,deadline})});$('taskTitle').value='';$('taskSubject').value='';$('taskDeadline').value='';render();notice('Домашка добавлена.')}catch{notice('Не удалось добавить ДЗ.',true)}}
-async function toggleTask(id){const t=state.tasks.find(x=>x.id===id);if(!t)return;try{state=await api('/api/tasks/toggle',{method:'POST',body:JSON.stringify({userId:Number(USER_ID),taskId:id,isCompleted:!t.isCompleted})});render()}catch{notice('Не удалось обновить задачу.',true)}}
-async function delTask(id){try{state=await api('/api/tasks/delete',{method:'POST',body:JSON.stringify({userId:Number(USER_ID),taskId:id})});render();notice('Задача удалена.')}catch{notice('Не удалось удалить задачу.',true)}}
-function collect(){rows=[...$('scheduleBody').querySelectorAll('tr')].map(tr=>{const old=rows[Number(tr.dataset.i)]||emptyRow(),v=f=>tr.querySelector(`[data-f="${f}"]`);return{...old,day:v('day').value,time:v('time').value.trim(),subject:v('subject').value.trim(),room:v('room').value.trim(),teacher:v('teacher').value.trim(),isPriority:v('isPriority').checked}})}
-async function saveSchedule(){collect();try{state=await api('/api/schedule/save',{method:'POST',body:JSON.stringify({userId:Number(USER_ID),photoDataUrl:photo,entries:rows})});rows=(state.schedule||[]).map(x=>({...x}));photo=state.schedulePhotoDataUrl||null;render();notice('Расписание сохранено.')}catch{notice('Не удалось сохранить расписание.',true)}}
-async function clearSchedule(){try{state=await api('/api/schedule/clear',{method:'POST',body:JSON.stringify({userId:Number(USER_ID)})});rows=[];photo=null;$('photoInput').value='';render();notice('Расписание очищено.')}catch{notice('Не удалось очистить расписание.',true)}}
-function addRow(){collect();rows.push(emptyRow());table()}function removeRow(i){collect();rows.splice(i,1);table()}function emptyRow(){return{id:(crypto.randomUUID?crypto.randomUUID().replaceAll('-',''):String(Date.now()+Math.random())),day:days[0],time:'',subject:'',room:'',teacher:'',isPriority:false}}
-async function photoFile(file){if(!file)return;if(!file.type.startsWith('image/')){notice('Выбери изображение.',true);return}try{photo=await resize(file,1400,.86);renderPhoto();notice('Фото добавлено. Нажми сохранить, чтобы закрепить его.')}catch{notice('Не удалось загрузить фото.',true)}}
-function resize(file,max,q){return new Promise((res,rej)=>{const rd=new FileReader();rd.onerror=rej;rd.onload=()=>{const img=new Image();img.onerror=rej;img.onload=()=>{const s=Math.min(1,max/img.width),c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',q))};img.src=rd.result};rd.readAsDataURL(file)})}
-function tab(name){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===name))}
-function fmt(sec){sec=Math.max(0,Number(sec)||0);const h=Math.floor(sec/3600),m=String(Math.floor(sec%3600/60)).padStart(2,'0'),s=String(sec%60).padStart(2,'0');return h?`${h}:${m}:${s}`:`${m}:${s}`}
-function date(v){const [y,m,d]=v.split('-');return `${d}.${m}.${y}`}function time(v){const d=new Date(v);return Number.isNaN(d.getTime())?'':d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}
-function esc(v){return String(v||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#039;")}function attr(v){return esc(v).replaceAll('`','&#096;')}
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>tab(b.dataset.tab));document.querySelectorAll('[data-start]').forEach(b=>b.onclick=()=>{const[x,y]=b.dataset.start.split(':');start(x,y)});$('refresh').onclick=load;$('stop').onclick=stop;$('workCustom').onclick=()=>start('work',$('workMin').value);$('restCustom').onclick=()=>start('rest',$('restMin').value);$('addTask').onclick=addTask;$('addRow').onclick=addRow;$('saveSchedule').onclick=saveSchedule;$('clearSchedule').onclick=clearSchedule;$('removePhoto').onclick=()=>{photo=null;$('photoInput').value='';renderPhoto()};$('photoInput').onchange=e=>photoFile(e.target.files?.[0]);$('taskList').onclick=e=>{const t=e.target.closest('[data-toggle]')?.dataset.toggle,d=e.target.closest('[data-delete]')?.dataset.delete;if(t)toggleTask(t);if(d)delTask(d)};$('scheduleBody').onclick=e=>{const r=e.target.closest('[data-remove]')?.dataset.remove;if(r!==undefined)removeRow(Number(r))};
-tab(params.get('view')==='timer'?'timers':(['overview','timers','tasks','schedule'].includes(params.get('view'))?params.get('view'):'overview'));load();
-</script>
+  <main class="app">
+    <header class="top">
+      <div>
+        <h1>Учёба под рукой</h1>
+        <div class="muted">Таймеры, домашка и расписание в одном Mini App.</div>
+      </div>
+      <div class="pill" id="conn">Подключаюсь...</div>
+    </header>
+
+    <nav class="tabs" aria-label="Разделы">
+      <button class="tab active" data-tab="overview" type="button">Обзор</button>
+      <button class="tab" data-tab="timers" type="button">Таймеры</button>
+      <button class="tab" data-tab="tasks" type="button">ДЗ</button>
+      <button class="tab" data-tab="schedule" type="button">Расписание</button>
+    </nav>
+
+    <section class="screen active" id="overview">
+      <div class="grid">
+        <div class="metric c3">
+          <b>Таймер</b>
+          <strong id="ovTimer">Нет</strong>
+          <span class="muted" id="ovTimerMeta">Можно запускать фокус или отдых.</span>
+        </div>
+        <div class="metric c3">
+          <b>Усталость</b>
+          <strong id="ovFatigue">0%</strong>
+          <span class="muted" id="ovFatigueMeta">Появится после сессий.</span>
+        </div>
+        <div class="metric c3">
+          <b>Домашка</b>
+          <strong id="ovTasks">0</strong>
+          <span class="muted">активных задач</span>
+        </div>
+        <div class="metric c3">
+          <b>Расписание</b>
+          <strong id="ovSchedule">0</strong>
+          <span class="muted">строк в таблице</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="timers">
+      <div class="band">
+        <div class="head">
+          <h2>Текущий таймер</h2>
+          <button class="secondary" id="refresh" type="button">Обновить</button>
+        </div>
+        <div class="body timer">
+          <div class="ring" id="ring">
+            <div class="center">
+              <span class="time" id="time">00:00</span>
+              <b id="timerLabel">не запущен</b>
+            </div>
+          </div>
+          <div>
+            <p class="muted" id="timerText">Выбери длительность, и бот запустит таймер с уведомлением в Telegram.</p>
+            <button class="danger" id="stop" type="button">Остановить таймер</button>
+            <div class="music">
+              <button id="musicToggle" type="button">Музыка</button>
+              <button id="trackToggle" type="button">Трек: Tape</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="band c6">
+          <div class="head"><h2>Фокус</h2></div>
+          <div class="body">
+            <div class="row">
+              <button data-start="work:25" type="button">25 мин</button>
+              <button data-start="work:30" type="button">30 мин</button>
+              <button data-start="work:45" type="button">45 мин</button>
+              <button data-start="work:60" type="button">60 мин</button>
+            </div>
+            <div class="inline">
+              <input id="workMin" type="number" min="1" max="300" placeholder="Своё время в минутах">
+              <button id="workCustom" type="button">Запустить</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="band c6">
+          <div class="head"><h2>Отдых</h2></div>
+          <div class="body">
+            <div class="row">
+              <button class="blue" data-start="rest:5" type="button">5 мин</button>
+              <button class="blue" data-start="rest:15" type="button">15 мин</button>
+              <button class="blue" data-start="rest:30" type="button">30 мин</button>
+            </div>
+            <div class="inline">
+              <input id="restMin" type="number" min="1" max="300" placeholder="Своё время отдыха">
+              <button class="blue" id="restCustom" type="button">Запустить</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="tasks">
+      <div class="band">
+        <div class="head"><h2>Добавить ДЗ</h2></div>
+        <div class="body">
+          <div class="grid">
+            <div class="c5">
+              <label for="taskTitle">Что нужно сделать</label>
+              <input id="taskTitle" placeholder="Решить задачи 12-18">
+            </div>
+            <div class="c4">
+              <label for="taskSubject">Предмет</label>
+              <input id="taskSubject" placeholder="Математика">
+            </div>
+            <div class="c3">
+              <label for="taskDeadline">Дедлайн</label>
+              <input id="taskDeadline" type="date">
+            </div>
+            <div class="c12">
+              <button id="addTask" type="button">Добавить домашку</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="band">
+        <div class="head"><h2>Список ДЗ</h2></div>
+        <div class="body">
+          <div class="tasks" id="taskList"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="schedule">
+      <div class="band">
+        <div class="head"><h2>Фото расписания</h2></div>
+        <div class="body">
+          <div class="photo-tools">
+            <div>
+              <label for="photoInput">Вставь фото расписания</label>
+              <input id="photoInput" type="file" accept="image/*">
+            </div>
+            <button class="secondary" id="removePhoto" type="button">Убрать фото</button>
+          </div>
+          <div class="photo" id="photoBox">
+            <div class="placeholder">Фото появится здесь. Ниже можно сразу переписать пары в таблицу.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="band">
+        <div class="head">
+          <h2>Таблица расписания</h2>
+          <button id="addRow" type="button">Добавить строку</button>
+        </div>
+        <div class="body">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>День</th>
+                  <th>Время пары</th>
+                  <th>Название предмета</th>
+                  <th>Аудитория</th>
+                  <th>Преподаватель</th>
+                  <th>Приоритетный</th>
+                  <th>Действие</th>
+                </tr>
+              </thead>
+              <tbody id="scheduleBody"></tbody>
+            </table>
+          </div>
+          <div class="toolbar">
+            <button id="saveSchedule" type="button">Сохранить расписание</button>
+            <button class="danger" id="clearSchedule" type="button">Очистить</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="notice" id="notice"></div>
+
+  <script>
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.expand();
+      tg.ready();
+      tg.setHeaderColor("#edf5f0");
+      tg.setBackgroundColor("#edf5f0");
+    }
+
+    const params = new URLSearchParams(location.search);
+    const tgUser = tg?.initDataUnsafe?.user;
+    const userId = params.get("userId") || (tgUser?.id ? String(tgUser.id) : "");
+    const chatId = params.get("chatId") || userId;
+    const apiBase = (params.get("apiBase") || location.origin).replace(/\/$/, "");
+    const staticMode = location.hostname.includes("github.io") && !params.get("apiBase");
+    const storeKey = "student-mini-app-state-" + (userId || "guest");
+
+    const days = [
+      "Понедельник",
+      "Вторник",
+      "Среда",
+      "Четверг",
+      "Пятница",
+      "Суббота",
+      "Воскресенье"
+    ];
+
+    const tracks = [
+      { name: "Tape", src: "./lofi.mp3" },
+      { name: "First Girl", src: "./barradeen-first-girl-talking-to-me.mp3" },
+      { name: "Life", src: "./extenz-life.mp3" },
+      { name: "No Words", src: "./le-gang-i-dont-need-u-2-say-anything.mp3" }
+    ];
+
+    let state = null;
+    let rows = [];
+    let photo = null;
+    let tickTimer = null;
+    let trackIndex = 0;
+    let musicOn = false;
+
+    const audio = new Audio();
+    audio.loop = true;
+    audio.volume = 0.45;
+
+    const $ = (id) => document.getElementById(id);
+
+    function showNotice(text, isError = false) {
+      const element = $("notice");
+      element.textContent = text;
+      element.className = "notice show" + (isError ? " error" : "");
+      clearTimeout(showNotice.timer);
+      showNotice.timer = setTimeout(() => {
+        element.className = "notice";
+      }, 2600);
+    }
+
+    async function api(path, options = {}) {
+      if (!staticMode) {
+        try {
+          const response = await fetch(apiBase + path, {
+            ...options,
+            headers: options.body ? { "Content-Type": "application/json" } : {}
+          });
+          const data = await response.json().catch(() => null);
+          if (response.ok && data?.ok) return data;
+        } catch {
+          // Static fallback below.
+        }
+      }
+
+      return localApi(path, options);
+    }
+
+    function baseState() {
+      return {
+        ok: true,
+        profile: {
+          userId: Number(userId) || 0,
+          firstName: tgUser?.first_name || "Студент",
+          fatigueLevel: 0,
+          fatigueDescription: "Локальный режим",
+          needsRest: false,
+          workSessionsWithoutRest: 0
+        },
+        timer: { active: false },
+        tasks: [],
+        schedulePhotoDataUrl: null,
+        schedule: []
+      };
+    }
+
+    function getLocalState() {
+      try {
+        return {
+          ...baseState(),
+          ...(JSON.parse(localStorage.getItem(storeKey) || "{}"))
+        };
+      } catch {
+        return baseState();
+      }
+    }
+
+    function saveLocalState(nextState) {
+      localStorage.setItem(storeKey, JSON.stringify({
+        profile: nextState.profile,
+        timer: nextState.timer,
+        tasks: nextState.tasks,
+        schedule: nextState.schedule,
+        schedulePhotoDataUrl: nextState.schedulePhotoDataUrl
+      }));
+      return nextState;
+    }
+
+    function requestBody(options) {
+      try {
+        return options.body ? JSON.parse(options.body) : {};
+      } catch {
+        return {};
+      }
+    }
+
+    function sendBot(payload) {
+      if (!tg) return;
+
+      try {
+        tg.sendData(JSON.stringify(payload));
+      } catch {
+        // Telegram may reject sendData outside Mini App context.
+      }
+    }
+
+    async function localApi(path, options = {}) {
+      const cleanPath = path.split("?")[0];
+      const body = requestBody(options);
+      const nextState = getLocalState();
+
+      if (cleanPath === "/api/state") {
+        return nextState;
+      }
+
+      if (cleanPath === "/api/timer/start") {
+        const now = Date.now();
+        const minutes = Number(body.minutes) || 25;
+        const type = body.type === "rest" ? "rest" : "work";
+
+        nextState.timer = {
+          active: true,
+          id: createId(),
+          type,
+          durationMinutes: minutes,
+          startedAtUnixMs: now,
+          startedAt: new Date(now).toISOString(),
+          endsAt: new Date(now + minutes * 60000).toISOString(),
+          remainingSeconds: minutes * 60
+        };
+
+        sendBot({ action: "start_timer", type, minutes });
+      } else if (cleanPath === "/api/timer/stop") {
+        nextState.timer = { active: false };
+        stopMusic();
+        sendBot({ action: "stop_timer" });
+      } else if (cleanPath === "/api/tasks/add") {
+        const id = createId();
+        const task = {
+          id,
+          shortId: id.slice(0, 8),
+          title: body.title || "",
+          subject: body.subject || "",
+          deadline: body.deadline || null,
+          isCompleted: false,
+          createdAt: new Date().toISOString()
+        };
+
+        nextState.tasks = [task, ...(nextState.tasks || [])];
+        sendBot({
+          action: "add_task",
+          title: task.title,
+          subject: task.subject,
+          deadline: task.deadline
+        });
+      } else if (cleanPath === "/api/tasks/toggle") {
+        nextState.tasks = (nextState.tasks || []).map((task) =>
+          task.id === body.taskId ? { ...task, isCompleted: !!body.isCompleted } : task
+        );
+      } else if (cleanPath === "/api/tasks/delete") {
+        nextState.tasks = (nextState.tasks || []).filter((task) => task.id !== body.taskId);
+      } else if (cleanPath === "/api/schedule/save") {
+        nextState.schedule = body.entries || [];
+        nextState.schedulePhotoDataUrl = body.photoDataUrl || null;
+        sendBot({
+          action: "save_schedule",
+          entries: nextState.schedule.map((row) => ({
+            day: row.day,
+            time: row.time,
+            subject: row.subject,
+            room: row.room,
+            teacher: row.teacher,
+            isPriority: !!row.isPriority
+          }))
+        });
+      } else if (cleanPath === "/api/schedule/clear") {
+        nextState.schedule = [];
+        nextState.schedulePhotoDataUrl = null;
+        sendBot({ action: "clear_schedule" });
+      }
+
+      return saveLocalState(nextState);
+    }
+
+    async function loadState() {
+      if (!userId) {
+        $("conn").textContent = "Открой из Telegram";
+        showNotice("Не вижу Telegram userId. Открой Mini App через кнопку бота.", true);
+        return;
+      }
+
+      try {
+        state = await api("/api/state?userId=" + encodeURIComponent(userId));
+        rows = (state.schedule || []).map((row) => ({ ...row }));
+        photo = state.schedulePhotoDataUrl || null;
+        render();
+        $("conn").textContent = "Готово: " + (state.profile.firstName || "студент");
+      } catch {
+        $("conn").textContent = "Нет связи";
+        showNotice("Данные будут сохранены локально.", true);
+      }
+    }
+
+    function render() {
+      renderOverview();
+      renderTimer();
+      renderTasks();
+      renderPhoto();
+      renderScheduleTable();
+    }
+
+    function renderOverview() {
+      const pending = (state.tasks || []).filter((task) => !task.isCompleted).length;
+      $("ovTasks").textContent = pending;
+      $("ovSchedule").textContent = (state.schedule || []).length;
+      $("ovFatigue").textContent = state.profile.fatigueLevel + "%";
+      $("ovFatigueMeta").textContent = state.profile.fatigueDescription;
+
+      if (state.timer?.active) {
+        $("ovTimer").textContent = state.timer.type === "rest" ? "Отдых" : "Фокус";
+        $("ovTimerMeta").textContent = "Осталось " + formatSeconds(state.timer.remainingSeconds || 0);
+      } else {
+        $("ovTimer").textContent = "Нет";
+        $("ovTimerMeta").textContent = "Можно запускать фокус или отдых.";
+      }
+    }
+
+    function renderTimer() {
+      clearInterval(tickTimer);
+      const timer = state?.timer;
+
+      if (!timer?.active) {
+        $("time").textContent = "00:00";
+        $("timerLabel").textContent = "не запущен";
+        $("timerText").textContent = "Выбери длительность, и бот запустит таймер с уведомлением в Telegram.";
+        $("ring").style.setProperty("--p", "0%");
+        $("stop").disabled = true;
+        return;
+      }
+
+      $("stop").disabled = false;
+      const totalSeconds = Math.max(1, timer.durationMinutes * 60);
+      const started = timer.startedAtUnixMs || Date.now();
+      const label = timer.type === "rest" ? "отдых" : "фокус";
+
+      const tick = () => {
+        const elapsed = Math.floor((Date.now() - started) / 1000);
+        const remaining = Math.max(0, totalSeconds - elapsed);
+        const progress = Math.max(0, Math.min(100, (remaining / totalSeconds) * 100));
+
+        $("time").textContent = formatSeconds(remaining);
+        $("timerLabel").textContent = label;
+        $("timerText").textContent = remaining > 0
+          ? "Завершится примерно в " + formatTime(timer.endsAt)
+          : "Таймер завершается, скоро придёт уведомление.";
+        $("ring").style.setProperty("--p", progress + "%");
+
+        if (remaining <= 0) clearInterval(tickTimer);
+      };
+
+      tick();
+      tickTimer = setInterval(tick, 1000);
+    }
+
+    function renderTasks() {
+      const list = $("taskList");
+      const tasks = state.tasks || [];
+      list.innerHTML = "";
+
+      if (!tasks.length) {
+        list.innerHTML = '<div class="empty">Домашки пока нет. Добавь первое задание сверху.</div>';
+        return;
+      }
+
+      tasks.forEach((task) => {
+        const deadline = task.deadline ? ", дедлайн " + formatDate(task.deadline) : "";
+        const item = document.createElement("div");
+        item.className = "task " + (task.isCompleted ? "done" : "");
+        item.innerHTML = `
+          <div>
+            <h3>${escapeHtml(task.title)}</h3>
+            <div class="muted">${escapeHtml(task.subject)}${deadline}</div>
+          </div>
+          <div class="actions">
+            <button class="${task.isCompleted ? "secondary" : "yellow"}" data-toggle="${task.id}" type="button">
+              ${task.isCompleted ? "Вернуть" : "Готово"}
+            </button>
+            <button class="danger" data-delete="${task.id}" type="button">Удалить</button>
+          </div>`;
+        list.appendChild(item);
+      });
+    }
+
+    function renderPhoto() {
+      $("photoBox").innerHTML = photo
+        ? `<img src="${photo}" alt="Фото расписания">`
+        : '<div class="placeholder">Фото появится здесь. Ниже можно сразу переписать пары в таблицу.</div>';
+    }
+
+    function renderScheduleTable() {
+      const body = $("scheduleBody");
+      body.innerHTML = "";
+
+      if (!rows.length) rows.push(createEmptyRow());
+
+      rows.forEach((row, index) => {
+        const tr = document.createElement("tr");
+        tr.dataset.index = index;
+        tr.innerHTML = `
+          <td>
+            <select data-field="day">
+              ${days.map((day) => `<option ${row.day === day ? "selected" : ""}>${day}</option>`).join("")}
+            </select>
+          </td>
+          <td><input data-field="time" value="${escapeAttr(row.time)}" placeholder="09:00-10:30"></td>
+          <td><input data-field="subject" value="${escapeAttr(row.subject)}" placeholder="Название пары"></td>
+          <td><input data-field="room" value="${escapeAttr(row.room)}" placeholder="302 / онлайн"></td>
+          <td><input data-field="teacher" value="${escapeAttr(row.teacher)}" placeholder="Преподаватель"></td>
+          <td>
+            <label class="prio">
+              <input data-field="isPriority" type="checkbox" ${row.isPriority ? "checked" : ""}>
+              Важно
+            </label>
+          </td>
+          <td><button class="danger" data-remove="${index}" type="button">Удалить</button></td>`;
+        body.appendChild(tr);
+      });
+    }
+
+    async function startTimer(type, minutes) {
+      const value = Number(minutes);
+      if (!Number.isInteger(value) || value < 1 || value > 300) {
+        showNotice("Введи время от 1 до 300 минут.", true);
+        return;
+      }
+
+      try {
+        state = await api("/api/timer/start", {
+          method: "POST",
+          body: JSON.stringify({
+            userId: Number(userId),
+            chatId: Number(chatId),
+            type,
+            minutes: value
+          })
+        });
+        render();
+        setTab("timers");
+        showNotice(type === "rest" ? "Таймер отдыха запущен." : "Рабочий таймер запущен.");
+      } catch {
+        showNotice("Не удалось запустить таймер.", true);
+      }
+    }
+
+    async function stopTimer() {
+      try {
+        state = await api("/api/timer/stop", {
+          method: "POST",
+          body: JSON.stringify({
+            userId: Number(userId),
+            chatId: Number(chatId),
+            timerId: state.timer?.id
+          })
+        });
+        render();
+        showNotice("Таймер остановлен.");
+      } catch {
+        showNotice("Не удалось остановить таймер.", true);
+      }
+    }
+
+    function updateMusic() {
+      $("musicToggle").textContent = musicOn ? "Выключить музыку" : "Музыка";
+      $("musicToggle").classList.toggle("active", musicOn);
+      $("trackToggle").textContent = "Трек: " + tracks[trackIndex].name;
+      $("trackToggle").classList.toggle("active", musicOn);
+    }
+
+    function playMusic() {
+      audio.src = tracks[trackIndex].src;
+      audio.play()
+        .then(() => {
+          musicOn = true;
+          updateMusic();
+        })
+        .catch(() => showNotice("Telegram может попросить нажать кнопку музыки ещё раз.", true));
+    }
+
+    function toggleMusic() {
+      if (musicOn) {
+        stopMusic();
+        return;
+      }
+
+      playMusic();
+    }
+
+    function stopMusic() {
+      audio.pause();
+      musicOn = false;
+      updateMusic();
+    }
+
+    function nextTrack() {
+      trackIndex = (trackIndex + 1) % tracks.length;
+      if (musicOn) playMusic();
+      updateMusic();
+    }
+
+    async function addTask() {
+      const title = $("taskTitle").value.trim();
+      const subject = $("taskSubject").value.trim();
+      const deadline = $("taskDeadline").value || null;
+
+      if (!title || !subject) {
+        showNotice("Заполни название ДЗ и предмет.", true);
+        return;
+      }
+
+      try {
+        state = await api("/api/tasks/add", {
+          method: "POST",
+          body: JSON.stringify({ userId: Number(userId), title, subject, deadline })
+        });
+        $("taskTitle").value = "";
+        $("taskSubject").value = "";
+        $("taskDeadline").value = "";
+        render();
+        showNotice("Домашка добавлена.");
+      } catch {
+        showNotice("Не удалось добавить ДЗ.", true);
+      }
+    }
+
+    async function toggleTask(taskId) {
+      const task = state.tasks.find((item) => item.id === taskId);
+      if (!task) return;
+
+      try {
+        state = await api("/api/tasks/toggle", {
+          method: "POST",
+          body: JSON.stringify({
+            userId: Number(userId),
+            taskId,
+            isCompleted: !task.isCompleted
+          })
+        });
+        render();
+      } catch {
+        showNotice("Не удалось обновить задачу.", true);
+      }
+    }
+
+    async function deleteTask(taskId) {
+      try {
+        state = await api("/api/tasks/delete", {
+          method: "POST",
+          body: JSON.stringify({ userId: Number(userId), taskId })
+        });
+        render();
+        showNotice("Задача удалена.");
+      } catch {
+        showNotice("Не удалось удалить задачу.", true);
+      }
+    }
+
+    function collectScheduleRows() {
+      rows = [...$("scheduleBody").querySelectorAll("tr")].map((tr) => {
+        const oldRow = rows[Number(tr.dataset.index)] || createEmptyRow();
+        const field = (name) => tr.querySelector(`[data-field="${name}"]`);
+
+        return {
+          ...oldRow,
+          day: field("day").value,
+          time: field("time").value.trim(),
+          subject: field("subject").value.trim(),
+          room: field("room").value.trim(),
+          teacher: field("teacher").value.trim(),
+          isPriority: field("isPriority").checked
+        };
+      });
+    }
+
+    async function saveSchedule() {
+      collectScheduleRows();
+
+      try {
+        state = await api("/api/schedule/save", {
+          method: "POST",
+          body: JSON.stringify({
+            userId: Number(userId),
+            photoDataUrl: photo,
+            entries: rows
+          })
+        });
+        rows = (state.schedule || []).map((row) => ({ ...row }));
+        photo = state.schedulePhotoDataUrl || null;
+        render();
+        showNotice("Расписание сохранено.");
+      } catch {
+        showNotice("Не удалось сохранить расписание.", true);
+      }
+    }
+
+    async function clearSchedule() {
+      try {
+        state = await api("/api/schedule/clear", {
+          method: "POST",
+          body: JSON.stringify({ userId: Number(userId) })
+        });
+        rows = [];
+        photo = null;
+        $("photoInput").value = "";
+        render();
+        showNotice("Расписание очищено.");
+      } catch {
+        showNotice("Не удалось очистить расписание.", true);
+      }
+    }
+
+    function addRow() {
+      collectScheduleRows();
+      rows.push(createEmptyRow());
+      renderScheduleTable();
+    }
+
+    function removeRow(index) {
+      collectScheduleRows();
+      rows.splice(index, 1);
+      renderScheduleTable();
+    }
+
+    function createId() {
+      return crypto.randomUUID
+        ? crypto.randomUUID().replaceAll("-", "")
+        : String(Date.now() + Math.random());
+    }
+
+    function createEmptyRow() {
+      return {
+        id: createId(),
+        day: days[0],
+        time: "",
+        subject: "",
+        room: "",
+        teacher: "",
+        isPriority: false
+      };
+    }
+
+    async function handlePhoto(file) {
+      if (!file) return;
+
+      if (!file.type.startsWith("image/")) {
+        showNotice("Выбери изображение.", true);
+        return;
+      }
+
+      try {
+        photo = await resizeImage(file, 1400, 0.86);
+        renderPhoto();
+        showNotice("Фото добавлено. Нажми сохранить, чтобы закрепить его.");
+      } catch {
+        showNotice("Не удалось загрузить фото.", true);
+      }
+    }
+
+    function resizeImage(file, maxWidth, quality) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = reject;
+        reader.onload = () => {
+          const image = new Image();
+          image.onerror = reject;
+          image.onload = () => {
+            const scale = Math.min(1, maxWidth / image.width);
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.round(image.width * scale);
+            canvas.height = Math.round(image.height * scale);
+            canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL("image/jpeg", quality));
+          };
+          image.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function setTab(name) {
+      document.querySelectorAll(".tab").forEach((button) => {
+        button.classList.toggle("active", button.dataset.tab === name);
+      });
+      document.querySelectorAll(".screen").forEach((screen) => {
+        screen.classList.toggle("active", screen.id === name);
+      });
+    }
+
+    function formatSeconds(seconds) {
+      const total = Math.max(0, Number(seconds) || 0);
+      const hours = Math.floor(total / 3600);
+      const minutes = String(Math.floor((total % 3600) / 60)).padStart(2, "0");
+      const secs = String(total % 60).padStart(2, "0");
+      return hours ? `${hours}:${minutes}:${secs}` : `${minutes}:${secs}`;
+    }
+
+    function formatDate(value) {
+      const [year, month, day] = value.split("-");
+      return `${day}.${month}.${year}`;
+    }
+
+    function formatTime(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "";
+      return date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value).replaceAll("`", "&#096;");
+    }
+
+    document.querySelectorAll(".tab").forEach((button) => {
+      button.addEventListener("click", () => setTab(button.dataset.tab));
+    });
+
+    document.querySelectorAll("[data-start]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const [type, minutes] = button.dataset.start.split(":");
+        startTimer(type, minutes);
+      });
+    });
+
+    $("refresh").addEventListener("click", loadState);
+    $("stop").addEventListener("click", stopTimer);
+    $("musicToggle").addEventListener("click", toggleMusic);
+    $("trackToggle").addEventListener("click", nextTrack);
+    $("workCustom").addEventListener("click", () => startTimer("work", $("workMin").value));
+    $("restCustom").addEventListener("click", () => startTimer("rest", $("restMin").value));
+    $("addTask").addEventListener("click", addTask);
+    $("addRow").addEventListener("click", addRow);
+    $("saveSchedule").addEventListener("click", saveSchedule);
+    $("clearSchedule").addEventListener("click", clearSchedule);
+    $("removePhoto").addEventListener("click", () => {
+      photo = null;
+      $("photoInput").value = "";
+      renderPhoto();
+    });
+    $("photoInput").addEventListener("change", (event) => handlePhoto(event.target.files?.[0]));
+
+    $("taskList").addEventListener("click", (event) => {
+      const toggleId = event.target.closest("[data-toggle]")?.dataset.toggle;
+      const deleteId = event.target.closest("[data-delete]")?.dataset.delete;
+      if (toggleId) toggleTask(toggleId);
+      if (deleteId) deleteTask(deleteId);
+    });
+
+    $("scheduleBody").addEventListener("click", (event) => {
+      const index = event.target.closest("[data-remove]")?.dataset.remove;
+      if (index !== undefined) removeRow(Number(index));
+    });
+
+    const startTab = params.get("view") === "timer"
+      ? "timers"
+      : params.get("view");
+
+    updateMusic();
+    setTab(["overview", "timers", "tasks", "schedule"].includes(startTab) ? startTab : "overview");
+    loadState();
+  </script>
 </body>
 </html>
